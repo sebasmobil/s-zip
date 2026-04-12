@@ -1,647 +1,1048 @@
 <!DOCTYPE html>
-<html lang="tr">
+<html lang="tr" data-theme="dark" data-color="green">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>E-okul Not Girişi Yardımcısı</title>
-<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=Syne:wght@400;600;700&display=swap" rel="stylesheet">
+<title>S-Zip Pro — Arşiv Çıkarıcı & Sıkıştırıcı</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/libarchive.js@1.3.0/dist/libarchive.js"></script>
 <style>
-  :root {
-    --bg: #0f1117;
-    --surface: #181c27;
-    --surface2: #1e2235;
-    --border: #2a2f45;
-    --border2: #353b55;
-    --text: #e8eaf0;
-    --muted: #7c84a0;
-    --accent: #4f8ef7;
-    --accent-dim: #1a2a4a;
-    --green: #3ecf8e;
-    --green-dim: #0f2a1e;
-    --amber: #f5a623;
-    --amber-dim: #2a1f0a;
-    --red: #e85d5d;
-    --mono: 'IBM Plex Mono', monospace;
-    --sans: 'Syne', sans-serif;
-    --radius: 10px;
-    --radius-sm: 6px;
-  }
+@import url('https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,700&display=swap');
 
-  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+/* ── COLOR THEMES ── */
+[data-color="green"]  {--acc:#00e676;--acc2:#00b248;--acc-rgb:0,230,118;--acc2-rgb:0,178,72}
+[data-color="purple"] {--acc:#a855f7;--acc2:#7c3aed;--acc-rgb:168,85,247;--acc2-rgb:124,58,237}
+[data-color="blue"]   {--acc:#38bdf8;--acc2:#0284c7;--acc-rgb:56,189,248;--acc2-rgb:2,132,199}
+[data-color="orange"] {--acc:#fb923c;--acc2:#ea580c;--acc-rgb:251,146,60;--acc2-rgb:234,88,12}
+[data-color="pink"]   {--acc:#f472b6;--acc2:#db2777;--acc-rgb:244,114,182;--acc2-rgb:219,39,119}
 
-  body {
-    background: var(--bg);
-    color: var(--text);
-    font-family: var(--sans);
-    min-height: 100vh;
-    padding: 0;
-    overflow-x: hidden;
-  }
+/* ── DARK / LIGHT ── */
+[data-theme="dark"] {
+  --bg:#08080e;--surface:#13131f;--surface2:#1c1c2e;
+  --border:#252538;--border2:#2e2e48;
+  --text:#eeeef5;--text2:#b0b0cc;--muted:#5a5a7a;
+  --danger:#ff4466;--success:#00cc6a;--warn:#f59e0b;
+  --shadow:rgba(0,0,0,.65);--grid:rgba(255,255,255,.022);
+  --bar-bg:rgba(8,8,14,.97);
+}
+[data-theme="light"] {
+  --bg:#f0f2fa;--surface:#ffffff;--surface2:#f4f5fd;
+  --border:#dde0f0;--border2:#c5cae8;
+  --text:#1a1a2e;--text2:#4a4a6a;--muted:#9090b0;
+  --danger:#e53e6a;--success:#059669;--warn:#d97706;
+  --shadow:rgba(100,100,180,.13);--grid:rgba(100,100,200,.04);
+  --bar-bg:rgba(240,242,250,.97);
+}
 
-  /* grid background */
-  body::before {
-    content: '';
-    position: fixed;
-    inset: 0;
-    background-image:
-      linear-gradient(rgba(79,142,247,0.03) 1px, transparent 1px),
-      linear-gradient(90deg, rgba(79,142,247,0.03) 1px, transparent 1px);
-    background-size: 40px 40px;
-    pointer-events: none;
-    z-index: 0;
-  }
+/* ── RESET ── */
+*{margin:0;padding:0;box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;min-height:100vh;overflow-x:hidden;padding-bottom:78px;transition:background .3s,color .3s}
+body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(var(--grid) 1px,transparent 1px),linear-gradient(90deg,var(--grid) 1px,transparent 1px);background-size:44px 44px;pointer-events:none;z-index:0}
+.orb{position:fixed;border-radius:50%;pointer-events:none;z-index:0}
+.orb.a{width:700px;height:700px;top:-280px;right:-180px;background:radial-gradient(circle,rgba(var(--acc-rgb),.06) 0%,transparent 65%)}
+.orb.b{width:500px;height:500px;bottom:-200px;left:-150px;background:radial-gradient(circle,rgba(var(--acc2-rgb),.05) 0%,transparent 65%)}
+.page{max-width:920px;margin:0 auto;padding:28px 16px;position:relative;z-index:1}
 
-  .header {
-    position: relative;
-    z-index: 1;
-    border-bottom: 1px solid var(--border);
-    padding: 20px 32px;
-    display: flex;
-    align-items: center;
-    gap: 16px;
-    background: rgba(15,17,23,0.8);
-    backdrop-filter: blur(10px);
-    position: sticky;
-    top: 0;
-  }
+/* ── TOPBAR ── */
+.topbar{display:flex;align-items:center;justify-content:space-between;padding:13px 20px;margin-bottom:24px;background:var(--surface);border:1px solid var(--border);border-radius:18px;gap:10px;flex-wrap:wrap}
+.topbar-left{display:flex;align-items:center;gap:11px}
+.app-icon{width:44px;height:44px;border-radius:12px;background:linear-gradient(135deg,var(--acc),var(--acc2));display:flex;align-items:center;justify-content:center;font-size:22px;box-shadow:0 0 22px rgba(var(--acc-rgb),.35);flex-shrink:0}
+.app-name{font-family:'Space Mono',monospace;font-size:16px;font-weight:700;line-height:1}
+.app-name span{color:var(--acc)}
+.app-ver{display:inline-block;margin-top:3px;font-family:'Space Mono',monospace;font-size:10px;background:rgba(var(--acc-rgb),.1);border:1px solid rgba(var(--acc-rgb),.25);border-radius:100px;padding:2px 9px;color:var(--acc);letter-spacing:.8px}
+.topbar-right{display:flex;align-items:center;gap:8px}
+.palette-wrap{display:flex;align-items:center;gap:5px}
+.pal{width:20px;height:20px;border-radius:50%;border:2px solid transparent;cursor:pointer;transition:transform .2s,border-color .2s}
+.pal:hover{transform:scale(1.25)}
+.pal.active{border-color:var(--text);transform:scale(1.2)}
+.pal[data-c="green"]{background:#00e676}.pal[data-c="purple"]{background:#a855f7}.pal[data-c="blue"]{background:#38bdf8}.pal[data-c="orange"]{background:#fb923c}.pal[data-c="pink"]{background:#f472b6}
+.theme-toggle{display:flex;background:var(--surface2);border:1px solid var(--border);border-radius:100px;padding:3px;gap:0}
+.theme-btn{width:30px;height:26px;border-radius:100px;border:none;background:none;cursor:pointer;font-size:14px;display:flex;align-items:center;justify-content:center;transition:all .2s;color:var(--muted)}
+.theme-btn.active{background:var(--surface);box-shadow:0 2px 8px var(--shadow);color:var(--text)}
 
-  .logo {
-    width: 36px;
-    height: 36px;
-    background: var(--accent);
-    border-radius: var(--radius-sm);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-family: var(--mono);
-    font-size: 14px;
-    font-weight: 500;
-    color: white;
-    flex-shrink: 0;
-  }
+/* ── TAB SWITCHER ── */
+.tab-bar{display:flex;background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:4px;gap:4px;margin-bottom:22px}
+.tab-btn{flex:1;display:flex;align-items:center;justify-content:center;gap:7px;padding:10px 8px;border-radius:10px;border:none;background:none;cursor:pointer;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:600;color:var(--muted);transition:all .22s}
+.tab-btn:hover{color:var(--text2);background:var(--surface2)}
+.tab-btn.active{background:linear-gradient(135deg,var(--acc),var(--acc2));color:#000;box-shadow:0 4px 16px rgba(var(--acc-rgb),.3)}
+.tab-btn svg{width:17px;height:17px;stroke-width:2}
 
-  .header-text h1 {
-    font-size: 16px;
-    font-weight: 700;
-    color: var(--text);
-    letter-spacing: -0.01em;
-  }
-  .header-text p {
-    font-size: 12px;
-    color: var(--muted);
-    font-family: var(--mono);
-  }
+/* ── PANELS ── */
+.panel{display:none}
+.panel.show{display:block}
 
-  .badge {
-    margin-left: auto;
-    font-family: var(--mono);
-    font-size: 11px;
-    padding: 4px 10px;
-    border-radius: 20px;
-    background: var(--green-dim);
-    color: var(--green);
-    border: 1px solid rgba(62,207,142,0.2);
-  }
+/* ── BADGES ── */
+.badge-row{display:flex;gap:6px;justify-content:center;margin-bottom:22px;flex-wrap:wrap}
+.badge{background:var(--surface2);border:1px solid var(--border);border-radius:100px;padding:3px 11px;font-family:'Space Mono',monospace;font-size:10px;color:var(--muted);letter-spacing:.4px}
+.badge.g{border-color:rgba(var(--acc-rgb),.35);color:var(--acc);background:rgba(var(--acc-rgb),.06)}
+.badge.p{border-color:rgba(var(--acc2-rgb),.35);color:var(--acc2);background:rgba(var(--acc2-rgb),.06)}
 
-  .main {
-    position: relative;
-    z-index: 1;
-    max-width: 860px;
-    margin: 0 auto;
-    padding: 32px 24px 80px;
-    display: flex;
-    flex-direction: column;
-    gap: 20px;
-  }
+/* ── FORMAT GRID ── */
+.formats-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(102px,1fr));gap:8px;margin-bottom:22px}
+.format-card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:11px 8px;text-align:center;transition:all .2s;cursor:default}
+.format-card:hover{border-color:rgba(var(--acc-rgb),.45);background:var(--surface2);transform:translateY(-2px)}
+.fmt-icon{font-size:20px;margin-bottom:3px}
+.fmt-name{font-family:'Space Mono',monospace;font-size:10px;color:var(--acc);font-weight:700;letter-spacing:.8px}
+.fmt-desc{font-size:9px;color:var(--muted);margin-top:2px}
 
-  .info-card {
-    background: var(--accent-dim);
-    border: 1px solid rgba(79,142,247,0.25);
-    border-radius: var(--radius);
-    padding: 14px 18px;
-    display: flex;
-    gap: 12px;
-    align-items: flex-start;
-  }
-  .info-card .icon { font-size: 16px; flex-shrink: 0; margin-top: 1px; }
-  .info-card p { font-size: 13px; color: #8ab4f8; line-height: 1.6; }
-  .info-card p strong { color: #adc8ff; }
+/* ── DROP ZONE ── */
+.drop-zone{border:2px dashed var(--border2);border-radius:20px;padding:52px 36px;text-align:center;cursor:pointer;transition:all .3s;background:var(--surface);position:relative;overflow:hidden;margin-bottom:20px}
+.drop-zone::before{content:'';position:absolute;inset:0;background:linear-gradient(135deg,rgba(var(--acc-rgb),.04),rgba(var(--acc2-rgb),.03));opacity:0;transition:opacity .3s}
+.drop-zone:hover,.drop-zone.dragover{border-color:var(--acc);box-shadow:0 0 50px rgba(var(--acc-rgb),.12),inset 0 0 40px rgba(var(--acc-rgb),.04)}
+.drop-zone:hover::before,.drop-zone.dragover::before{opacity:1}
+.drop-zone.dragover{transform:scale(1.01)}
+.drop-icon{font-size:50px;margin-bottom:16px;display:block;animation:float 3s ease-in-out infinite;filter:drop-shadow(0 0 16px rgba(var(--acc-rgb),.4))}
+@keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-8px)}}
+.drop-title{font-family:'Space Mono',monospace;font-size:18px;font-weight:700;margin-bottom:7px;color:var(--text)}
+.drop-sub{color:var(--muted);font-size:13px;line-height:1.7}
+.drop-sub strong{color:var(--acc);font-weight:500}
+.browse-btn{display:inline-flex;align-items:center;gap:6px;margin-top:18px;background:linear-gradient(135deg,var(--acc),var(--acc2));color:#000;font-family:'Space Mono',monospace;font-size:12px;font-weight:700;padding:10px 24px;border-radius:10px;border:none;cursor:pointer;transition:all .2s;letter-spacing:.4px}
+.browse-btn:hover{transform:translateY(-2px);box-shadow:0 8px 24px rgba(var(--acc-rgb),.35)}
+#fileInput,#compInput{display:none}
 
-  .card {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: var(--radius);
-    overflow: hidden;
-  }
+/* ── STATUS ── */
+.status-box{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:20px;margin-bottom:18px;display:none;transition:background .3s}
+.status-box.show{display:block}
+.status-header{display:flex;align-items:center;gap:11px;margin-bottom:14px}
+.status-dot{width:10px;height:10px;border-radius:50%;background:var(--acc);box-shadow:0 0 10px var(--acc);animation:pulse 1.2s ease-in-out infinite;flex-shrink:0}
+@keyframes pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.5;transform:scale(.75)}}
+.status-dot.done{animation:none;background:var(--success);box-shadow:0 0 10px var(--success)}
+.status-dot.err{animation:none;background:var(--danger);box-shadow:0 0 10px var(--danger)}
+.status-text{font-family:'Space Mono',monospace;font-size:13px;color:var(--text)}
+.progress-bar{height:5px;background:var(--surface2);border-radius:100px;overflow:hidden;margin-bottom:9px}
+.progress-fill{height:100%;background:linear-gradient(90deg,var(--acc),var(--acc2));border-radius:100px;transition:width .35s ease;width:0%;position:relative}
+.progress-fill::after{content:'';position:absolute;right:0;top:0;bottom:0;width:28px;background:linear-gradient(90deg,transparent,rgba(255,255,255,.2))}
+.progress-info{display:flex;justify-content:space-between;font-size:11px;color:var(--muted);font-family:'Space Mono',monospace}
 
-  .card-header {
-    padding: 14px 20px;
-    border-bottom: 1px solid var(--border);
-    display: flex;
-    align-items: center;
-    gap: 10px;
-  }
+/* ── FILE TREE ── */
+.file-tree-wrapper{background:var(--surface);border:1px solid var(--border);border-radius:14px;overflow:hidden;display:none}
+.file-tree-wrapper.show{display:block}
+.tree-header{display:flex;align-items:center;justify-content:space-between;padding:14px 20px;border-bottom:1px solid var(--border);background:var(--surface2);flex-wrap:wrap;gap:9px}
+.tree-header-left{display:flex;align-items:center;gap:8px}
+.tree-title{font-family:'Space Mono',monospace;font-size:13px;font-weight:700;color:var(--text)}
+.file-count{background:rgba(var(--acc-rgb),.1);border:1px solid rgba(var(--acc-rgb),.25);border-radius:100px;padding:2px 9px;font-size:11px;font-family:'Space Mono',monospace;color:var(--acc)}
+.tree-actions{display:flex;gap:6px;flex-wrap:wrap}
+.action-btn{background:var(--surface);border:1px solid var(--border);border-radius:7px;padding:6px 12px;font-size:11px;font-family:'Space Mono',monospace;color:var(--text2);cursor:pointer;transition:all .2s;display:flex;align-items:center;gap:5px}
+.action-btn:hover{border-color:var(--acc);color:var(--acc)}
+.action-btn.primary{background:linear-gradient(135deg,var(--acc),var(--acc2));color:#000;border-color:transparent;font-weight:700}
+.action-btn.primary:hover{transform:translateY(-1px);box-shadow:0 4px 13px rgba(var(--acc-rgb),.3);color:#000}
+.search-bar{padding:10px 20px;border-bottom:1px solid var(--border)}
+.search-input{width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:8px 12px;font-size:13px;font-family:'DM Sans',sans-serif;color:var(--text);outline:none;transition:border-color .2s}
+.search-input:focus{border-color:var(--acc)}
+.search-input::placeholder{color:var(--muted)}
+.file-list{max-height:400px;overflow-y:auto;padding:5px 0}
+.file-list::-webkit-scrollbar{width:5px}
+.file-list::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px}
+.file-item{display:flex;align-items:center;gap:9px;padding:7px 20px;cursor:pointer;transition:background .15s;border-left:3px solid transparent}
+.file-item:hover{background:var(--surface2);border-left-color:var(--acc)}
+.file-item.selected{background:rgba(var(--acc-rgb),.05);border-left-color:var(--acc)}
+.file-item.folder{cursor:default}
+.file-cb{width:14px;height:14px;flex-shrink:0;accent-color:var(--acc);cursor:pointer}
+.file-icon{font-size:14px;flex-shrink:0}
+.file-name{flex:1;font-size:12px;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-family:'Space Mono',monospace}
+.file-size{font-size:10px;color:var(--muted);font-family:'Space Mono',monospace;flex-shrink:0}
+.file-dl{background:none;border:1px solid var(--border);border-radius:5px;padding:3px 7px;font-size:10px;color:var(--acc);cursor:pointer;transition:all .2s;font-family:'Space Mono',monospace;flex-shrink:0}
+.file-dl:hover{background:rgba(var(--acc-rgb),.1);border-color:var(--acc)}
+.empty-state{text-align:center;padding:32px;color:var(--muted);font-size:13px}
 
-  .step-badge {
-    width: 22px;
-    height: 22px;
-    border-radius: 50%;
-    background: var(--accent);
-    color: white;
-    font-family: var(--mono);
-    font-size: 11px;
-    font-weight: 500;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    flex-shrink: 0;
-  }
+/* ── COMPRESS PANEL ── */
+.comp-drop{border:2px dashed var(--border2);border-radius:20px;padding:48px 32px;text-align:center;cursor:pointer;transition:all .3s;background:var(--surface);position:relative;overflow:hidden;margin-bottom:18px}
+.comp-drop::before{content:'';position:absolute;inset:0;background:linear-gradient(135deg,rgba(var(--acc-rgb),.04),rgba(var(--acc2-rgb),.03));opacity:0;transition:opacity .3s}
+.comp-drop:hover,.comp-drop.dragover{border-color:var(--acc);box-shadow:0 0 40px rgba(var(--acc-rgb),.1)}
+.comp-drop:hover::before,.comp-drop.dragover::before{opacity:1}
+.comp-drop-icon{font-size:48px;margin-bottom:14px;display:block;animation:float 3.2s ease-in-out infinite}
+.comp-drop-title{font-family:'Space Mono',monospace;font-size:18px;font-weight:700;color:var(--text);margin-bottom:6px}
+.comp-drop-sub{color:var(--muted);font-size:13px;line-height:1.7}
+.comp-drop-sub strong{color:var(--acc)}
 
-  .card-header h3 {
-    font-size: 14px;
-    font-weight: 600;
-    color: var(--text);
-  }
+/* Selected files list */
+.comp-files-box{background:var(--surface);border:1px solid var(--border);border-radius:14px;overflow:hidden;margin-bottom:16px;display:none}
+.comp-files-box.show{display:block}
+.comp-files-header{display:flex;align-items:center;justify-content:space-between;padding:12px 18px;background:var(--surface2);border-bottom:1px solid var(--border)}
+.comp-files-title{font-family:'Space Mono',monospace;font-size:13px;font-weight:700;color:var(--text);display:flex;align-items:center;gap:8px}
+.comp-files-list{max-height:200px;overflow-y:auto;padding:4px 0}
+.comp-files-list::-webkit-scrollbar{width:4px}
+.comp-files-list::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px}
+.comp-file-row{display:flex;align-items:center;gap:9px;padding:7px 18px;border-left:3px solid transparent;transition:background .15s}
+.comp-file-row:hover{background:var(--surface2);border-left-color:var(--acc)}
+.comp-file-icon{font-size:15px;flex-shrink:0}
+.comp-file-name{flex:1;font-size:12px;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-family:'Space Mono',monospace}
+.comp-file-size{font-size:10px;color:var(--muted);font-family:'Space Mono',monospace;flex-shrink:0}
+.comp-file-del{background:none;border:none;cursor:pointer;font-size:14px;color:var(--muted);transition:color .15s;flex-shrink:0;padding:0 2px}
+.comp-file-del:hover{color:var(--danger)}
 
-  .card-body { padding: 20px; }
+/* Options */
+.comp-options{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:18px 20px;margin-bottom:16px}
+.comp-opt-title{font-family:'Space Mono',monospace;font-size:12px;color:var(--muted);letter-spacing:1px;text-transform:uppercase;margin-bottom:14px;display:flex;align-items:center;gap:8px}
+.comp-opt-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.comp-opt-item{display:flex;flex-direction:column;gap:5px}
+.comp-opt-label{font-size:12px;color:var(--text2);font-weight:500}
+.comp-select,.comp-input-field{
+  background:var(--surface2);border:1px solid var(--border);
+  border-radius:8px;padding:8px 11px;
+  font-size:12px;font-family:'Space Mono',monospace;
+  color:var(--text);outline:none;width:100%;
+  transition:border-color .2s;
+  appearance:none;-webkit-appearance:none;
+  cursor:pointer;
+}
+.comp-select:focus,.comp-input-field:focus{border-color:var(--acc)}
+.comp-select option{background:var(--surface2);color:var(--text)}
 
-  label {
-    font-size: 12px;
-    font-family: var(--mono);
-    color: var(--muted);
-    display: block;
-    margin-bottom: 6px;
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
-  }
+/* Level slider */
+.slider-wrap{display:flex;align-items:center;gap:10px}
+.comp-slider{
+  flex:1;height:4px;accent-color:var(--acc);cursor:pointer;
+  background:var(--surface2);border-radius:2px;
+}
+.slider-val{font-family:'Space Mono',monospace;font-size:11px;color:var(--acc);min-width:16px;text-align:right}
 
-  select, textarea, input[type="text"] {
-    width: 100%;
-    background: var(--surface2);
-    border: 1px solid var(--border);
-    border-radius: var(--radius-sm);
-    color: var(--text);
-    font-family: var(--sans);
-    font-size: 13px;
-    padding: 10px 12px;
-    outline: none;
-    transition: border-color 0.15s;
-    appearance: none;
-  }
-  select:focus, textarea:focus, input:focus { border-color: var(--accent); }
+/* Password toggle */
+.pw-toggle-wrap{display:flex;align-items:center;gap:8px;margin-top:4px}
+.toggle-sw{position:relative;width:36px;height:20px;cursor:pointer}
+.toggle-sw input{opacity:0;width:0;height:0}
+.toggle-sw .slider-track{position:absolute;inset:0;border-radius:20px;background:var(--surface2);border:1px solid var(--border);transition:all .25s}
+.toggle-sw input:checked + .slider-track{background:var(--acc);border-color:var(--acc)}
+.toggle-sw .slider-track::after{content:'';position:absolute;top:2px;left:2px;width:14px;height:14px;border-radius:50%;background:var(--muted);transition:transform .25s}
+.toggle-sw input:checked + .slider-track::after{transform:translateX(16px);background:#000}
+.pw-toggle-label{font-size:12px;color:var(--text2)}
 
-  select { cursor: pointer; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%237c84a0' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 12px center; padding-right: 32px; }
+.pw-field-wrap{margin-top:8px;display:none}
+.pw-field-wrap.show{display:block}
 
-  textarea {
-    font-family: var(--mono);
-    font-size: 12px;
-    resize: vertical;
-    min-height: 140px;
-    line-height: 1.6;
-  }
+/* Compress button */
+.comp-go-btn{
+  width:100%;background:linear-gradient(135deg,var(--acc),var(--acc2));
+  color:#000;font-family:'Space Mono',monospace;
+  font-size:14px;font-weight:700;padding:14px;
+  border-radius:12px;border:none;cursor:pointer;
+  transition:all .2s;letter-spacing:.5px;
+  display:flex;align-items:center;justify-content:center;gap:8px;
+}
+.comp-go-btn:hover{transform:translateY(-2px);box-shadow:0 8px 26px rgba(var(--acc-rgb),.35)}
+.comp-go-btn:disabled{opacity:.45;cursor:not-allowed;transform:none;box-shadow:none}
 
-  .col-grid {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 6px;
-    margin-top: 12px;
-  }
+/* Compression result */
+.comp-result{background:var(--surface);border:1px solid rgba(var(--acc-rgb),.25);border-radius:14px;padding:18px 20px;margin-top:16px;display:none}
+.comp-result.show{display:block}
+.comp-result-title{font-family:'Space Mono',monospace;font-size:12px;color:var(--acc);letter-spacing:1px;text-transform:uppercase;margin-bottom:12px}
+.comp-result-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:14px}
+.comp-stat{background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:12px;text-align:center}
+.comp-stat-val{font-family:'Space Mono',monospace;font-size:16px;font-weight:700;color:var(--text);margin-bottom:2px}
+.comp-stat-val.green{color:var(--success)}
+.comp-stat-label{font-size:10px;color:var(--muted)}
+.comp-dl-btn{width:100%;background:linear-gradient(135deg,var(--acc),var(--acc2));color:#000;font-family:'Space Mono',monospace;font-size:13px;font-weight:700;padding:12px;border-radius:10px;border:none;cursor:pointer;transition:all .2s;display:flex;align-items:center;justify-content:center;gap:7px}
+.comp-dl-btn:hover{transform:translateY(-1px);box-shadow:0 6px 20px rgba(var(--acc-rgb),.3)}
 
-  .col-pill {
-    background: var(--surface2);
-    border: 1px solid var(--border);
-    border-radius: var(--radius-sm);
-    padding: 6px 10px;
-    font-family: var(--mono);
-    font-size: 11px;
-    color: var(--muted);
-    display: flex;
-    align-items: center;
-    gap: 6px;
-  }
-  .col-pill .letter {
-    background: var(--accent);
-    color: white;
-    width: 18px;
-    height: 18px;
-    border-radius: 4px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 10px;
-    font-weight: 500;
-    flex-shrink: 0;
-  }
-  .col-pill span { color: var(--text); }
+/* Info */
+.info-section{margin-top:24px;background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:16px 20px}
+.info-title{font-family:'Space Mono',monospace;font-size:11px;color:var(--acc2);margin-bottom:10px;display:flex;align-items:center;gap:7px;letter-spacing:.8px;text-transform:uppercase}
+.info-list{list-style:none;display:grid;grid-template-columns:1fr 1fr;gap:6px}
+.info-list li{font-size:12px;color:var(--muted);display:flex;align-items:center;gap:6px}
+.info-list li::before{content:'→';color:var(--acc);font-family:monospace;flex-shrink:0}
+footer{text-align:center;margin-top:36px;color:var(--muted);font-size:11px;font-family:'Space Mono',monospace;padding-bottom:6px}
 
-  .example-box {
-    background: var(--surface2);
-    border: 1px solid var(--border);
-    border-radius: var(--radius-sm);
-    padding: 12px;
-    font-family: var(--mono);
-    font-size: 11px;
-    color: var(--muted);
-    margin-top: 10px;
-    line-height: 1.8;
-  }
-  .example-box .row { color: var(--text); }
-  .example-box .row span { color: var(--accent); }
+/* ── BOTTOM BAR ── */
+.bottom-bar{
+  position:fixed;bottom:0;left:0;right:0;height:60px;
+  background:var(--bar-bg);backdrop-filter:blur(24px);-webkit-backdrop-filter:blur(24px);
+  border-top:1px solid var(--border);
+  display:flex;align-items:center;justify-content:space-between;
+  padding:0 20px;z-index:200;transition:background .3s,border-color .3s;
+  gap:10px;
+}
+/* Left: app info pill */
+.bar-info-pill{display:flex;align-items:center;gap:8px}
+.bar-logo{width:26px;height:26px;border-radius:7px;background:linear-gradient(135deg,var(--acc),var(--acc2));display:flex;align-items:center;justify-content:center;font-size:13px}
+.bar-appname{font-family:'Space Mono',monospace;font-size:12px;font-weight:700;color:var(--text)}
+.bar-appname span{color:var(--acc)}
+.bar-ver-tag{font-family:'Space Mono',monospace;font-size:9px;color:var(--muted);background:var(--surface2);border:1px solid var(--border);border-radius:100px;padding:2px 7px;letter-spacing:.5px}
 
-  .btn-row { display: flex; gap: 10px; flex-wrap: wrap; }
+/* Center: file size counter */
+.bar-center{display:flex;align-items:center;gap:14px}
+.bar-stat{display:flex;flex-direction:column;align-items:center;gap:1px}
+.bar-stat-val{font-family:'Space Mono',monospace;font-size:12px;font-weight:700;color:var(--text);line-height:1}
+.bar-stat-label{font-family:'Space Mono',monospace;font-size:9px;color:var(--muted);letter-spacing:.5px}
+.bar-stat-divider{width:1px;height:28px;background:var(--border)}
 
-  .btn {
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
-    padding: 10px 18px;
-    border-radius: var(--radius-sm);
-    border: 1px solid var(--border2);
-    background: var(--surface2);
-    color: var(--text);
-    font-family: var(--sans);
-    font-size: 13px;
-    font-weight: 600;
-    cursor: pointer;
-    transition: all 0.15s;
-  }
-  .btn:hover { background: var(--border); border-color: var(--accent); color: var(--accent); }
-  .btn:active { transform: scale(0.98); }
-  .btn.primary { background: var(--accent); border-color: var(--accent); color: white; }
-  .btn.primary:hover { background: #6aa0f9; border-color: #6aa0f9; color: white; }
-  .btn.green { background: var(--green-dim); border-color: rgba(62,207,142,0.3); color: var(--green); }
-  .btn.green:hover { background: rgba(62,207,142,0.15); }
+/* Right: contact */
+.bar-right{display:flex;align-items:center;gap:6px}
+.bar-contact-label{font-family:'Space Mono',monospace;font-size:9px;color:var(--muted);letter-spacing:1.2px;text-transform:uppercase;margin-right:2px}
+.bar-icon-btn{width:31px;height:31px;border-radius:8px;background:none;border:1px solid var(--border);display:flex;align-items:center;justify-content:center;cursor:pointer;transition:all .2s;color:var(--muted);text-decoration:none;font-size:0}
+.bar-icon-btn:hover{border-color:var(--acc);color:var(--acc);background:rgba(var(--acc-rgb),.1);transform:translateY(-2px)}
+.bar-icon-btn svg{width:15px;height:15px}
 
-  .output-section { display: none; }
-  .output-section.visible { display: flex; flex-direction: column; gap: 14px; }
+/* ── CHANGELOG ── */
+.cl-overlay{position:fixed;inset:0;background:rgba(0,0,0,.82);backdrop-filter:blur(10px);z-index:600;display:flex;align-items:center;justify-content:center;padding:16px;opacity:0;pointer-events:none;transition:opacity .35s}
+.cl-overlay.show{opacity:1;pointer-events:all}
+.cl-modal{background:var(--surface);border:1px solid var(--border);border-radius:24px;width:100%;max-width:500px;max-height:90vh;display:flex;flex-direction:column;overflow:hidden;box-shadow:0 40px 100px var(--shadow);transform:translateY(36px) scale(.96);transition:transform .4s cubic-bezier(.34,1.28,.64,1)}
+.cl-overlay.show .cl-modal{transform:translateY(0) scale(1)}
+.cl-header{padding:24px 24px 18px;border-bottom:1px solid var(--border);background:var(--surface2);flex-shrink:0}
+.cl-header-top{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:7px}
+.cl-app-label{font-family:'Space Mono',monospace;font-size:10px;letter-spacing:2px;color:var(--muted);text-transform:uppercase}
+.cl-ver-badge{background:linear-gradient(135deg,var(--acc),var(--acc2));border-radius:100px;padding:3px 13px;font-family:'Space Mono',monospace;font-size:11px;font-weight:700;color:#000}
+.cl-title{font-family:'Space Mono',monospace;font-size:21px;font-weight:700;color:var(--text);margin-bottom:3px}
+.cl-subtitle{font-size:13px;color:var(--muted)}
+.cl-body{overflow-y:auto;padding:20px 24px;flex:1}
+.cl-body::-webkit-scrollbar{width:4px}
+.cl-body::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px}
+.cl-scroll-hint{display:flex;align-items:center;justify-content:center;gap:5px;padding:8px 24px;font-size:11px;color:var(--muted);font-family:'Space Mono',monospace;border-top:1px solid var(--border);animation:bounceH 1.8s ease-in-out infinite;flex-shrink:0;background:var(--surface2)}
+@keyframes bounceH{0%,100%{transform:translateY(0);opacity:.6}50%{transform:translateY(4px);opacity:1}}
+.cl-scroll-hint.hidden{display:none}
+.cl-section{margin-bottom:24px}.cl-section:last-child{margin-bottom:0}
+.cl-section-label{display:inline-flex;align-items:center;gap:5px;font-family:'Space Mono',monospace;font-size:10px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;padding:3px 10px;border-radius:6px;margin-bottom:12px}
+.cl-section-label.new{background:rgba(var(--acc-rgb),.1);color:var(--acc);border:1px solid rgba(var(--acc-rgb),.25)}
+.cl-section-label.imp{background:rgba(var(--acc2-rgb),.1);color:var(--acc2);border:1px solid rgba(var(--acc2-rgb),.25)}
+.cl-section-label.fix{background:rgba(251,146,60,.1);color:#fb923c;border:1px solid rgba(251,146,60,.25)}
+.cl-item{display:flex;align-items:flex-start;gap:12px;padding:11px 0;border-bottom:1px solid rgba(128,128,128,.07)}
+.cl-item:last-child{border-bottom:none}
+.cl-item-icon{width:34px;height:34px;border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0;background:var(--surface2);border:1px solid var(--border)}
+.cl-item-name{font-size:13px;font-weight:600;color:var(--text);margin-bottom:2px}
+.cl-item-desc{font-size:12px;color:var(--muted);line-height:1.55}
+.cl-footer{padding:16px 24px;border-top:1px solid var(--border);background:var(--surface2);flex-shrink:0}
+.cl-dontshow{display:flex;align-items:flex-start;gap:9px;margin-bottom:12px;cursor:pointer}
+.cl-dontshow input{width:15px;height:15px;margin-top:2px;accent-color:var(--acc);cursor:pointer;flex-shrink:0}
+.cl-dontshow-label{font-size:12px;color:var(--muted);cursor:pointer;user-select:none;line-height:1.5}
+.cl-ok-btn{width:100%;background:linear-gradient(135deg,var(--acc),var(--acc2));color:#000;font-family:'Space Mono',monospace;font-size:14px;font-weight:700;padding:13px;border-radius:11px;border:none;cursor:pointer;transition:all .2s}
+.cl-ok-btn:hover{transform:translateY(-2px);box-shadow:0 8px 26px rgba(var(--acc-rgb),.35)}
 
-  .code-block {
-    background: #0a0c12;
-    border: 1px solid var(--border);
-    border-radius: var(--radius-sm);
-    padding: 16px;
-    font-family: var(--mono);
-    font-size: 11px;
-    color: #a8b4d0;
-    white-space: pre;
-    overflow-x: auto;
-    max-height: 220px;
-    overflow-y: auto;
-    line-height: 1.7;
-  }
-  .code-block .kw { color: #79b8ff; }
-  .code-block .str { color: #9ecbff; }
-  .code-block .num { color: #f0c27f; }
-  .code-block .cm { color: #444d6a; }
+/* ── ERROR MODAL ── */
+.err-overlay{position:fixed;inset:0;background:rgba(0,0,0,.85);backdrop-filter:blur(10px);z-index:800;display:flex;align-items:center;justify-content:center;padding:16px;opacity:0;pointer-events:none;transition:opacity .3s}
+.err-overlay.show{opacity:1;pointer-events:all}
+.err-modal{background:var(--surface);border:1px solid rgba(255,68,102,.3);border-radius:22px;width:100%;max-width:520px;display:flex;flex-direction:column;overflow:hidden;box-shadow:0 30px 80px var(--shadow);transform:scale(.93);transition:transform .35s cubic-bezier(.34,1.3,.64,1)}
+.err-overlay.show .err-modal{transform:scale(1)}
+.err-header{padding:20px 22px 15px;background:linear-gradient(135deg,rgba(255,68,102,.08),rgba(255,68,102,.03));border-bottom:1px solid rgba(255,68,102,.15);display:flex;align-items:flex-start;gap:13px}
+.err-icon-wrap{width:42px;height:42px;border-radius:11px;flex-shrink:0;background:rgba(255,68,102,.12);border:1px solid rgba(255,68,102,.25);display:flex;align-items:center;justify-content:center;font-size:21px}
+.err-title{font-family:'Space Mono',monospace;font-size:15px;font-weight:700;color:var(--danger);margin-bottom:3px}
+.err-subtitle{font-size:13px;color:var(--muted)}
+.err-body{padding:18px 22px;max-height:320px;overflow-y:auto}
+.err-body::-webkit-scrollbar{width:4px}
+.err-body::-webkit-scrollbar-thumb{background:rgba(255,68,102,.25);border-radius:2px}
+.err-block-label{font-family:'Space Mono',monospace;font-size:10px;letter-spacing:1.5px;text-transform:uppercase;color:rgba(255,68,102,.65);margin-bottom:5px;display:flex;align-items:center;gap:5px}
+.err-block-label::before{content:'';width:10px;height:1px;background:currentColor}
+.err-code-block{background:var(--bg);border:1px solid rgba(255,68,102,.2);border-radius:9px;padding:12px 14px;font-family:'Space Mono',monospace;font-size:11px;color:var(--text2);line-height:1.7;word-break:break-all;white-space:pre-wrap;margin-bottom:14px;max-height:140px;overflow-y:auto}
+.err-meta-grid{display:grid;grid-template-columns:1fr 1fr;gap:7px}
+.err-meta-item{background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:9px 11px}
+.err-meta-label{font-family:'Space Mono',monospace;font-size:9px;letter-spacing:1px;color:var(--muted);text-transform:uppercase;margin-bottom:2px}
+.err-meta-val{font-family:'Space Mono',monospace;font-size:11px;color:var(--text2);word-break:break-all}
+.err-meta-val.red{color:var(--danger)}
+.err-footer{padding:14px 22px;border-top:1px solid var(--border);display:flex;gap:7px;flex-wrap:wrap;background:var(--surface2)}
+.err-btn{flex:1;min-width:80px;padding:10px 12px;border-radius:9px;font-family:'Space Mono',monospace;font-size:11px;font-weight:700;cursor:pointer;transition:all .2s;border:1px solid var(--border);display:flex;align-items:center;justify-content:center;gap:5px}
+.err-btn.close{background:var(--surface);color:var(--muted)}.err-btn.close:hover{color:var(--text)}
+.err-btn.copy{background:var(--surface);color:var(--acc);border-color:rgba(var(--acc-rgb),.3)}.err-btn.copy:hover{background:rgba(var(--acc-rgb),.1)}
+.err-btn.retry{background:linear-gradient(135deg,var(--danger),#cc0033);color:#fff;border-color:transparent}.err-btn.retry:hover{transform:translateY(-1px);box-shadow:0 5px 15px rgba(255,68,102,.3)}
 
-  .steps-list {
-    background: var(--amber-dim);
-    border: 1px solid rgba(245,166,35,0.2);
-    border-radius: var(--radius);
-    padding: 16px 20px;
-  }
-  .steps-list h4 {
-    font-size: 13px;
-    font-weight: 600;
-    color: var(--amber);
-    margin-bottom: 10px;
-    font-family: var(--mono);
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
-  }
-  .steps-list ol {
-    list-style: none;
-    counter-reset: steps;
-  }
-  .steps-list ol li {
-    counter-increment: steps;
-    font-size: 13px;
-    color: #d4a84a;
-    line-height: 1.6;
-    padding: 4px 0;
-    padding-left: 24px;
-    position: relative;
-  }
-  .steps-list ol li::before {
-    content: counter(steps) '.';
-    position: absolute;
-    left: 0;
-    font-family: var(--mono);
-    color: var(--amber);
-    font-weight: 500;
-  }
-  .steps-list ol li strong { color: #f5c169; }
+/* ── PASSWORD MODAL ── */
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.8);backdrop-filter:blur(4px);z-index:700;display:none;align-items:center;justify-content:center;padding:16px}
+.modal-overlay.show{display:flex}
+.modal{background:var(--surface);border:1px solid var(--border);border-radius:18px;padding:28px;width:100%;max-width:360px;box-shadow:0 20px 60px var(--shadow)}
+.modal h3{font-family:'Space Mono',monospace;margin-bottom:6px;font-size:16px}
+.modal p{color:var(--muted);font-size:13px;margin-bottom:16px}
+.modal input{width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:9px;padding:10px 13px;font-size:13px;color:var(--text);font-family:'Space Mono',monospace;outline:none;margin-bottom:12px;transition:border-color .2s}
+.modal input:focus{border-color:var(--acc)}
+.modal-btns{display:flex;gap:8px}
+.modal-btns button{flex:1;padding:10px;border-radius:9px;font-family:'Space Mono',monospace;font-size:12px;font-weight:700;cursor:pointer;transition:all .2s;border:1px solid var(--border)}
+.btn-cancel{background:var(--surface2);color:var(--muted)}.btn-cancel:hover{color:var(--text)}
+.btn-ok-pw{background:linear-gradient(135deg,var(--acc),var(--acc2));color:#000;border-color:transparent}
 
-  .success-toast {
-    display: none;
-    background: var(--green-dim);
-    border: 1px solid rgba(62,207,142,0.3);
-    border-radius: var(--radius-sm);
-    padding: 10px 14px;
-    font-size: 13px;
-    color: var(--green);
-    font-family: var(--mono);
-    align-items: center;
-    gap: 8px;
-  }
-  .success-toast.show { display: flex; }
+/* ── TOAST ── */
+.toast{position:fixed;bottom:72px;right:14px;background:var(--surface2);border:1px solid rgba(var(--acc-rgb),.4);border-radius:11px;padding:11px 16px;font-family:'Space Mono',monospace;font-size:12px;color:var(--text);transform:translateY(110px);opacity:0;transition:all .32s cubic-bezier(.34,1.56,.64,1);z-index:1000;max-width:280px;box-shadow:0 10px 36px var(--shadow)}
+.toast.show{transform:translateY(0);opacity:1}
 
-  .divider {
-    height: 1px;
-    background: var(--border);
-    margin: 4px 0;
-  }
-
-  .stat-row {
-    display: flex;
-    gap: 12px;
-    flex-wrap: wrap;
-  }
-  .stat {
-    background: var(--surface2);
-    border: 1px solid var(--border);
-    border-radius: var(--radius-sm);
-    padding: 10px 14px;
-    font-family: var(--mono);
-    flex: 1;
-    min-width: 100px;
-  }
-  .stat .val { font-size: 22px; font-weight: 500; color: var(--accent); }
-  .stat .lbl { font-size: 11px; color: var(--muted); margin-top: 2px; }
-
-  .footer {
-    text-align: center;
-    font-family: var(--mono);
-    font-size: 11px;
-    color: var(--muted);
-    padding: 32px 0 0;
-  }
-
-  @media (max-width: 600px) {
-    .main { padding: 20px 16px 60px; }
-    .header { padding: 16px 20px; }
-    .btn-row { flex-direction: column; }
-  }
+/* ── RESPONSIVE ── */
+@media(max-width:560px){
+  .tree-header,.comp-opt-grid{grid-template-columns:1fr}
+  .tree-header{flex-direction:column;align-items:flex-start}
+  .formats-grid{grid-template-columns:repeat(4,1fr)}
+  .info-list{grid-template-columns:1fr}
+  .comp-result-grid{grid-template-columns:1fr 1fr}
+  .bar-center{display:none}
+  .bar-contact-label{display:none}
+  .bar-appname{display:none}
+}
+@media(max-width:380px){
+  .formats-grid{grid-template-columns:repeat(3,1fr)}
+  .err-meta-grid{grid-template-columns:1fr}
+}
 </style>
 </head>
 <body>
+<div class="orb a"></div>
+<div class="orb b"></div>
 
-<header class="header">
-  <div class="logo">EO</div>
-  <div class="header-text">
-    <h1>E-okul Not Girişi Yardımcısı</h1>
-    <p>Excel → Konsol Script Dönüştürücü</p>
-  </div>
-  <div class="badge">v1.0 · Çevrimdışı</div>
-</header>
-
-<main class="main">
-
-  <div class="info-card">
-    <div class="icon">ℹ</div>
-    <p>Bu araç <strong>tamamen çevrimdışı çalışır</strong> — internet bağlantısı gerektirmez. Excel'den kopyaladığınız notları buraya yapıştırın, oluşan kodu e-okul sayfasında F12 → Console'a yapıştırın. Alanlar otomatik dolar, siz sadece <strong>Kaydet</strong>'e basarsınız.</p>
-  </div>
-
-  <!-- Step 1 -->
-  <div class="card">
-    <div class="card-header">
-      <div class="step-badge">1</div>
-      <h3>Sütun düzeninizi seçin</h3>
+<!-- ══════════ CHANGELOG ══════════ -->
+<div class="cl-overlay" id="clOverlay">
+  <div class="cl-modal">
+    <div class="cl-header">
+      <div class="cl-header-top">
+        <span class="cl-app-label">S-ZIP PRO</span>
+        <span class="cl-ver-badge">Pro 1.0.01</span>
+      </div>
+      <div class="cl-title">Yenilikler 🎉</div>
+      <div class="cl-subtitle">Bu sürümde neler değişti — aşağı kaydır</div>
     </div>
-    <div class="card-body">
-      <label>Excel sütun sırası</label>
-      <select id="colOrder" onchange="updateColMap()">
-        <option value="okul_no,sinav1,sinav2,proje1,proje2,ders1,ders2,ders3">Okul No | 1.Sınav | 2.Sınav | 1.Proje | 2.Proje | Ders1 | Ders2 | Ders3</option>
-        <option value="okul_no,sinav1,sinav2,ders1,ders2,ders3">Okul No | 1.Sınav | 2.Sınav | Ders1 | Ders2 | Ders3</option>
-        <option value="okul_no,sinav1,sinav2,proje1,proje2">Okul No | 1.Sınav | 2.Sınav | 1.Proje | 2.Proje</option>
-        <option value="okul_no,sinav1,sinav2">Okul No | 1.Sınav | 2.Sınav</option>
-        <option value="okul_no,sinav1">Okul No | sadece 1.Sınav</option>
-        <option value="okul_no,sinav2">Okul No | sadece 2.Sınav</option>
-      </select>
+    <div class="cl-body" id="clBody">
+      <div class="cl-section">
+        <div class="cl-section-label new">✦ Yeni</div>
+        <div class="cl-item"><div class="cl-item-icon">📦</div><div><div class="cl-item-name">S-Zip Pro Yayında!</div><div class="cl-item-desc">Tamamen yeniden tasarlanan arayüz ve güçlendirilmiş format desteğiyle S-Zip Pro'ya hoş geldiniz.</div></div></div>
+        <div class="cl-item"><div class="cl-item-icon">🗜️</div><div><div class="cl-item-name">Dosya Sıkıştırma</div><div class="cl-item-desc">Birden fazla dosyayı seçip ZIP olarak sıkıştırın. Sıkıştırma seviyesi, şifre ve ZIP adı ayarlanabilir.</div></div></div>
+        <div class="cl-item"><div class="cl-item-icon">🌙</div><div><div class="cl-item-name">Gece / Gündüz Teması</div><div class="cl-item-desc">Karanlık ve aydınlık tema arasında anında geçiş yapın. Tercih otomatik kaydedilir.</div></div></div>
+        <div class="cl-item"><div class="cl-item-icon">🎨</div><div><div class="cl-item-name">5 Renk Teması</div><div class="cl-item-desc">Yeşil, Mor, Mavi, Turuncu ve Pembe aksent rengi seçenekleri.</div></div></div>
+        <div class="cl-item"><div class="cl-item-icon">🚨</div><div><div class="cl-item-name">Akıllı Hata Yakalayıcı</div><div class="cl-item-desc">Hata oluştuğunda detaylı bilgi paneli: mesaj, satır, dosya, zaman. Kopyala & Yenile butonları.</div></div></div>
+        <div class="cl-item"><div class="cl-item-icon">🔐</div><div><div class="cl-item-name">Şifreli ZIP Desteği</div><div class="cl-item-desc">Hem açma hem sıkıştırma işlemlerinde şifre koruması desteklenir.</div></div></div>
+        <div class="cl-item"><div class="cl-item-icon">🔷</div><div><div class="cl-item-name">RAR5 & 7Z Desteği</div><div class="cl-item-desc">RAR5 ve 7-Zip formatları tam olarak desteklenmektedir.</div></div></div>
+      </div>
+      <div class="cl-section">
+        <div class="cl-section-label imp">⬆ İyileştirmeler</div>
+        <div class="cl-item"><div class="cl-item-icon">⚡</div><div><div class="cl-item-name">Hızlı İşleme Motoru</div><div class="cl-item-desc">Büyük dosyalar için optimize edilmiş motor, tarayıcı belleği çok daha verimli kullanılıyor.</div></div></div>
+        <div class="cl-item"><div class="cl-item-icon">📱</div><div><div class="cl-item-name">Mobil Uyumluluk</div><div class="cl-item-desc">Telefon ve tablet ekranlarına tam uyumlu, dokunmatik dostu arayüz.</div></div></div>
+        <div class="cl-item"><div class="cl-item-icon">⬇️</div><div><div class="cl-item-name">Toplu İndirme</div><div class="cl-item-desc">Seçilen dosyaları ZIP'e paketleyip tek seferde indir.</div></div></div>
+      </div>
+      <div class="cl-section">
+        <div class="cl-section-label fix">🔧 Düzeltmeler</div>
+        <div class="cl-item"><div class="cl-item-icon">🛡️</div><div><div class="cl-item-name">%100 Gizlilik</div><div class="cl-item-desc">Hiçbir dosya sunucuya gönderilmez. Tüm işlemler tarayıcı içinde gerçekleşir.</div></div></div>
+        <div class="cl-item"><div class="cl-item-icon">📂</div><div><div class="cl-item-name">Klasör Yapısı</div><div class="cl-item-desc">Arşiv içindeki iç içe klasör hiyerarşisi artık doğru gösteriliyor ve indiriliyor.</div></div></div>
+      </div>
+    </div>
+    <div class="cl-scroll-hint" id="clScrollHint">▼ &nbsp;Devamı için kaydır</div>
+    <div class="cl-footer">
+      <label class="cl-dontshow"><input type="checkbox" id="dontShowCb"><span class="cl-dontshow-label">Bu sürüm için bir daha gösterme (yeni güncelleme geldiğinde yeniden açılır)</span></label>
+      <button class="cl-ok-btn" id="clOkBtn">✓ &nbsp;Anlaşıldı, Başla!</button>
+    </div>
+  </div>
+</div>
 
-      <div class="col-grid" id="colMapDisplay"></div>
+<!-- ══════════ ERROR MODAL ══════════ -->
+<div class="err-overlay" id="errOverlay">
+  <div class="err-modal">
+    <div class="err-header">
+      <div class="err-icon-wrap">⚠️</div>
+      <div>
+        <div class="err-title">Bir Hata Oluştu</div>
+        <div class="err-subtitle" id="errSubtitle">İşlem sırasında beklenmeyen bir hata meydana geldi.</div>
+      </div>
+    </div>
+    <div class="err-body">
+      <div class="err-block-label">Hata Mesajı</div>
+      <div class="err-code-block" id="errMessage">—</div>
+      <div class="err-block-label">Teknik Detaylar</div>
+      <div class="err-meta-grid">
+        <div class="err-meta-item"><div class="err-meta-label">Kaynak Dosya</div><div class="err-meta-val" id="errFile">—</div></div>
+        <div class="err-meta-item"><div class="err-meta-label">Satır : Sütun</div><div class="err-meta-val red" id="errLine">—</div></div>
+        <div class="err-meta-item"><div class="err-meta-label">Hata Türü</div><div class="err-meta-val red" id="errType">—</div></div>
+        <div class="err-meta-item"><div class="err-meta-label">Zaman</div><div class="err-meta-val" id="errTime">—</div></div>
+      </div>
+    </div>
+    <div class="err-footer">
+      <button class="err-btn close" onclick="closeErrModal()">✕ Kapat</button>
+      <button class="err-btn copy"  onclick="copyErrReport()">📋 Kopyala</button>
+      <button class="err-btn retry" onclick="retryAction()">↺ Yenile</button>
+    </div>
+  </div>
+</div>
 
-      <div class="example-box">
-        <div style="color:var(--muted); margin-bottom:4px;">// Excel'de böyle görünmeli:</div>
-        <div class="row" id="exampleRow"><span>23</span>	85	90	80	75	1	1	1</div>
-        <div class="row"><span>97</span>	70	65	88	90	2	1	2</div>
-        <div class="row"><span>102</span>	95	88	92	85	1	2	1</div>
+<!-- ══════════ PASSWORD MODAL ══════════ -->
+<div class="modal-overlay" id="pwModal">
+  <div class="modal">
+    <h3>🔐 Şifre Gerekli</h3>
+    <p>Bu arşiv şifrelidir. Lütfen şifreyi girin.</p>
+    <input type="password" id="pwInput" placeholder="Şifre..." onkeydown="if(event.key==='Enter')confirmPw()">
+    <div class="modal-btns">
+      <button class="btn-cancel" onclick="cancelPw()">İptal</button>
+      <button class="btn-ok-pw" onclick="confirmPw()">Aç</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<!-- ══════════ MAIN ══════════ -->
+<div class="page">
+
+  <!-- TOPBAR -->
+  <div class="topbar">
+    <div class="topbar-left">
+      <div class="app-icon">📦</div>
+      <div>
+        <div class="app-name">S-<span>Zip</span></div>
+        <span class="app-ver">PRO 1.0.01</span>
+      </div>
+    </div>
+    <div class="topbar-right">
+      <div class="palette-wrap" title="Renk Teması">
+        <div class="pal active" data-c="green"  onclick="setColor('green')"  title="Yeşil"></div>
+        <div class="pal"        data-c="purple" onclick="setColor('purple')" title="Mor"></div>
+        <div class="pal"        data-c="blue"   onclick="setColor('blue')"   title="Mavi"></div>
+        <div class="pal"        data-c="orange" onclick="setColor('orange')" title="Turuncu"></div>
+        <div class="pal"        data-c="pink"   onclick="setColor('pink')"   title="Pembe"></div>
+      </div>
+      <div class="theme-toggle">
+        <button class="theme-btn active" id="btnDark"  onclick="setTheme('dark')"  title="Gece">🌙</button>
+        <button class="theme-btn"        id="btnLight" onclick="setTheme('light')" title="Gündüz">☀️</button>
       </div>
     </div>
   </div>
 
-  <!-- Step 2 -->
-  <div class="card">
-    <div class="card-header">
-      <div class="step-badge">2</div>
-      <h3>Excel'den not verilerini yapıştırın</h3>
+  <!-- TAB BAR -->
+  <div class="tab-bar">
+    <button class="tab-btn active" id="tabExtract" onclick="switchTab('extract')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+      Arşiv Aç
+    </button>
+    <button class="tab-btn" id="tabCompress" onclick="switchTab('compress')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+      Sıkıştır
+    </button>
+  </div>
+
+  <!-- ════ EXTRACT PANEL ════ -->
+  <div class="panel show" id="panelExtract">
+
+    <div class="badge-row">
+      <span class="badge g">🔒 %100 Çevrimdışı</span>
+      <span class="badge p">🌐 Tarayıcıda Çalışır</span>
+      <span class="badge">ZIP · RAR · 7Z · TAR · GZ · BZ2 · XZ</span>
     </div>
-    <div class="card-body">
-      <label>Veri (Excel'den Ctrl+C → Ctrl+V)</label>
-      <textarea id="excelData" placeholder="Excel'den seçip kopyaladığınız verileri buraya yapıştırın...
 
-Örnek:
-23	85	90	80	75	1	1	1
-97	70	65	88	90	2	1	2
-102	95	88	92	85	1	2	1" oninput="updateStats()"></textarea>
+    <div class="formats-grid">
+      <div class="format-card"><div class="fmt-icon">📮</div><div class="fmt-name">.ZIP</div><div class="fmt-desc">Evrensel</div></div>
+      <div class="format-card"><div class="fmt-icon">🗜️</div><div class="fmt-name">.RAR</div><div class="fmt-desc">RAR4/5</div></div>
+      <div class="format-card"><div class="fmt-icon">🔷</div><div class="fmt-name">.7Z</div><div class="fmt-desc">7-Zip</div></div>
+      <div class="format-card"><div class="fmt-icon">📁</div><div class="fmt-name">.TAR</div><div class="fmt-desc">Unix</div></div>
+      <div class="format-card"><div class="fmt-icon">🌀</div><div class="fmt-name">.GZ</div><div class="fmt-desc">Gzip</div></div>
+      <div class="format-card"><div class="fmt-icon">🔩</div><div class="fmt-name">.BZ2</div><div class="fmt-desc">Bzip2</div></div>
+      <div class="format-card"><div class="fmt-icon">⚙️</div><div class="fmt-name">.XZ</div><div class="fmt-desc">LZMA2</div></div>
+      <div class="format-card"><div class="fmt-icon">💾</div><div class="fmt-name">.TGZ</div><div class="fmt-desc">Tar+Gz</div></div>
+    </div>
 
-      <div class="stat-row" style="margin-top:12px;">
-        <div class="stat">
-          <div class="val" id="statRows">0</div>
-          <div class="lbl">Öğrenci</div>
+    <div class="drop-zone" id="dropZone">
+      <span class="drop-icon">📂</span>
+      <div class="drop-title">Arşiv dosyasını buraya bırak</div>
+      <div class="drop-sub">veya bilgisayarından seç<br><strong>ZIP, RAR, 7Z, TAR, GZ, BZ2, XZ, TGZ</strong> desteklenir</div>
+      <button class="browse-btn" onclick="document.getElementById('fileInput').click()">📁 Dosya Seç</button>
+      <input type="file" id="fileInput" accept=".zip,.rar,.7z,.tar,.gz,.bz2,.xz,.tgz,.tar.gz,.tar.bz2,.tar.xz">
+    </div>
+
+    <div class="status-box" id="statusBox">
+      <div class="status-header">
+        <div class="status-dot" id="statusDot"></div>
+        <div class="status-text" id="statusText">İşleniyor...</div>
+      </div>
+      <div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>
+      <div class="progress-info"><span id="progressLabel">Başlatılıyor...</span><span id="progressPct">0%</span></div>
+    </div>
+
+    <div class="file-tree-wrapper" id="fileTree">
+      <div class="tree-header">
+        <div class="tree-header-left">
+          <span class="tree-title" id="archiveName">arşiv.zip</span>
+          <span class="file-count" id="fileCount">0 dosya</span>
         </div>
-        <div class="stat">
-          <div class="val" id="statCols">0</div>
-          <div class="lbl">Sütun</div>
-        </div>
-        <div class="stat">
-          <div class="val" id="statFilled">0</div>
-          <div class="lbl">Dolu alan</div>
+        <div class="tree-actions">
+          <button class="action-btn" onclick="selectAll()">☑ Tümünü Seç</button>
+          <button class="action-btn" onclick="clearSel()">☐ Temizle</button>
+          <button class="action-btn primary" onclick="dlSelected()">⬇ Seçilenleri İndir</button>
+          <button class="action-btn primary" onclick="dlAll()">📦 Tümünü İndir</button>
         </div>
       </div>
+      <div class="search-bar">
+        <input class="search-input" type="text" id="searchInput" placeholder="🔍 Dosya ara..." oninput="filterFiles()">
+      </div>
+      <div class="file-list" id="fileList"></div>
+    </div>
+
+    <div class="info-section">
+      <div class="info-title">ℹ️ Gizlilik & Güvenlik</div>
+      <ul class="info-list">
+        <li>Dosyalar sunucuya gönderilmez</li><li>Tarayıcı belleğinde işlenir</li>
+        <li>İnternet bağlantısı gerekmez</li><li>Açık kaynak kütüphaneler</li>
+        <li>Şifreli ZIP desteklenir</li><li>Büyük dosyalar desteklenir</li>
+      </ul>
     </div>
   </div>
 
-  <!-- Step 3 -->
-  <div class="card">
-    <div class="card-header">
-      <div class="step-badge">3</div>
-      <h3>Konsol kodunu oluşturun</h3>
+  <!-- ════ COMPRESS PANEL ════ -->
+  <div class="panel" id="panelCompress">
+
+    <!-- Drop area for compression -->
+    <div class="comp-drop" id="compDrop">
+      <span class="comp-drop-icon">🗜️</span>
+      <div class="comp-drop-title">Sıkıştırılacak dosyaları seç</div>
+      <div class="comp-drop-sub">Birden fazla dosya veya klasör seçebilirsiniz<br><strong>Hepsi ZIP olarak paketlenir</strong></div>
+      <button class="browse-btn" style="margin-top:16px" onclick="document.getElementById('compInput').click()">📎 Dosya Ekle</button>
+      <input type="file" id="compInput" multiple>
     </div>
-    <div class="card-body">
-      <div class="btn-row">
-        <button class="btn primary" onclick="generateScript()">
-          ⚡ Kodu Oluştur
-        </button>
-        <button class="btn" onclick="clearAll()">Temizle</button>
-      </div>
 
-      <div class="output-section" id="outputSection" style="margin-top:16px;">
-        <div class="success-toast show" id="toast">
-          ✓ Kod hazır! Aşağıdaki kodu kopyalayıp e-okul konsoluna yapıştırın.
+    <!-- Selected files list -->
+    <div class="comp-files-box" id="compFilesBox">
+      <div class="comp-files-header">
+        <div class="comp-files-title">
+          <span>📋 Eklenmiş Dosyalar</span>
+          <span class="file-count" id="compFileCount">0 dosya</span>
+          <span class="file-count" id="compTotalSize" style="background:rgba(var(--acc2-rgb),.1);border-color:rgba(var(--acc2-rgb),.25);color:var(--acc2)">0 B</span>
         </div>
-
-        <label style="margin-top:8px;">Oluşturulan konsol kodu</label>
-        <div class="code-block" id="scriptOutput"></div>
-
-        <div class="btn-row">
-          <button class="btn green" onclick="copyScript()" id="copyBtn">
-            📋 Kodu Kopyala
-          </button>
-        </div>
-
-        <div class="steps-list">
-          <h4>⚡ Nasıl Kullanılır?</h4>
-          <ol>
-            <li>E-okul'da <strong>Not Girişi</strong> sayfasını açın (öğrenci listesi görünmeli)</li>
-            <li><strong>F12</strong> tuşuna basın → <strong>Console</strong> sekmesine tıklayın</li>
-            <li>Yukarıdaki kodu <strong>yapıştırın</strong> ve <strong>Enter</strong>'a basın</li>
-            <li>Alanlar otomatik dolacak — gözden geçirin</li>
-            <li><strong>Kaydet</strong> butonuna basın</li>
-          </ol>
+        <div style="display:flex;gap:6px">
+          <button class="action-btn" onclick="document.getElementById('compInput').click()">+ Daha Ekle</button>
+          <button class="action-btn" style="color:var(--danger);border-color:rgba(255,68,102,.3)" onclick="clearCompFiles()">🗑 Temizle</button>
         </div>
       </div>
+      <div class="comp-files-list" id="compFilesList"></div>
+    </div>
+
+    <!-- Options -->
+    <div class="comp-options">
+      <div class="comp-opt-title">⚙️ Sıkıştırma Ayarları</div>
+      <div class="comp-opt-grid">
+        <div class="comp-opt-item">
+          <label class="comp-opt-label">ZIP Dosya Adı</label>
+          <input type="text" class="comp-input-field" id="compZipName" placeholder="arsiv.zip" value="arsiv.zip">
+        </div>
+        <div class="comp-opt-item">
+          <label class="comp-opt-label">Sıkıştırma Yöntemi</label>
+          <select class="comp-select" id="compMethod">
+            <option value="DEFLATE">DEFLATE (Önerilen)</option>
+            <option value="STORE">STORE (Sıkıştırmasız)</option>
+          </select>
+        </div>
+        <div class="comp-opt-item">
+          <label class="comp-opt-label">Sıkıştırma Seviyesi: <span id="compLevelVal" style="color:var(--acc)">6</span></label>
+          <div class="slider-wrap">
+            <span style="font-size:10px;color:var(--muted);font-family:'Space Mono',monospace">Hız</span>
+            <input type="range" class="comp-slider" id="compLevel" min="1" max="9" value="6" oninput="document.getElementById('compLevelVal').textContent=this.value">
+            <span style="font-size:10px;color:var(--muted);font-family:'Space Mono',monospace">Küçük</span>
+          </div>
+        </div>
+        <div class="comp-opt-item">
+          <label class="comp-opt-label">Şifre Koruması</label>
+          <div class="pw-toggle-wrap">
+            <label class="toggle-sw">
+              <input type="checkbox" id="compPwToggle" onchange="toggleCompPw()">
+              <span class="slider-track"></span>
+            </label>
+            <span class="pw-toggle-label">Şifreyle koru</span>
+          </div>
+          <div class="pw-field-wrap" id="compPwField">
+            <input type="password" class="comp-input-field" id="compPwInput" placeholder="Şifre girin..." style="margin-top:6px">
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <button class="comp-go-btn" id="compGoBtn" onclick="startCompress()" disabled>
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+      ZIP Oluştur ve İndir
+    </button>
+
+    <!-- Compress status -->
+    <div class="status-box" id="compStatusBox">
+      <div class="status-header">
+        <div class="status-dot" id="compStatusDot"></div>
+        <div class="status-text" id="compStatusText">Sıkıştırılıyor...</div>
+      </div>
+      <div class="progress-bar"><div class="progress-fill" id="compProgressFill"></div></div>
+      <div class="progress-info"><span id="compProgressLabel">Başlatılıyor...</span><span id="compProgressPct">0%</span></div>
+    </div>
+
+    <!-- Result stats -->
+    <div class="comp-result" id="compResult">
+      <div class="comp-result-title">✓ Sıkıştırma Tamamlandı</div>
+      <div class="comp-result-grid">
+        <div class="comp-stat"><div class="comp-stat-val" id="resBefore">—</div><div class="comp-stat-label">Orijinal Boyut</div></div>
+        <div class="comp-stat"><div class="comp-stat-val" id="resAfter">—</div><div class="comp-stat-label">Sıkıştırılmış</div></div>
+        <div class="comp-stat"><div class="comp-stat-val green" id="resRatio">—</div><div class="comp-stat-label">Tasarruf</div></div>
+      </div>
+      <button class="comp-dl-btn" id="compDlBtn">⬇ ZIP Dosyasını İndir</button>
+    </div>
+
+    <div class="info-section" style="margin-top:20px">
+      <div class="info-title">💡 Sıkıştırma Hakkında</div>
+      <ul class="info-list">
+        <li>Tüm dosyalar ZIP formatında paketlenir</li>
+        <li>Orijinal klasör yapısı korunur</li>
+        <li>Şifre sadece tarayıcıda uygulanır</li>
+        <li>Sınır yok, büyük dosya desteklenir</li>
+      </ul>
+    </div>
+
+  </div><!-- /panelCompress -->
+
+  <footer>S-Zip Pro 1.0.01 — Çevrimdışı arşiv yöneticisi</footer>
+</div>
+
+<!-- ══════════ BOTTOM BAR ══════════ -->
+<div class="bottom-bar">
+  <!-- Left: branding -->
+  <div class="bar-info-pill">
+    <div class="bar-logo">📦</div>
+    <div>
+      <div class="bar-appname">S-<span>Zip</span></div>
+    </div>
+    <span class="bar-ver-tag">Pro 1.0.01</span>
+  </div>
+
+  <!-- Center: live stats -->
+  <div class="bar-center">
+    <div class="bar-stat">
+      <span class="bar-stat-val" id="barFileCount">—</span>
+      <span class="bar-stat-label">DOSYA</span>
+    </div>
+    <div class="bar-stat-divider"></div>
+    <div class="bar-stat">
+      <span class="bar-stat-val" id="barTotalSize">—</span>
+      <span class="bar-stat-label">BOYUT</span>
+    </div>
+    <div class="bar-stat-divider"></div>
+    <div class="bar-stat">
+      <span class="bar-stat-val" id="barFormat">—</span>
+      <span class="bar-stat-label">FORMAT</span>
     </div>
   </div>
 
-  <div class="footer">
-    E-okul Not Girişi Yardımcısı · Tamamen çevrimdışı · Verileriniz cihazınızda kalır
+  <!-- Right: contact -->
+  <div class="bar-right">
+    <span class="bar-contact-label">İletişim</span>
+    <a class="bar-icon-btn" href="https://instagram.com/sebasmobil" target="_blank" title="Instagram @sebasmobil">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="2" y="2" width="20" height="20" rx="5"/><circle cx="12" cy="12" r="4.5"/><circle cx="17.5" cy="6.5" r="1" fill="currentColor" stroke="none"/></svg>
+    </a>
+    <a class="bar-icon-btn" href="#" onclick="openMail(event)" title="E-posta Gönder">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="2" y="4" width="20" height="16" rx="2"/><polyline points="2,4 12,13 22,4"/></svg>
+    </a>
   </div>
-
-</main>
+</div>
 
 <script>
-const colLabels = {
-  okul_no: 'Okul No',
-  sinav1: '1. Sınav',
-  sinav2: '2. Sınav',
-  proje1: '1. Proje',
-  proje2: '2. Proje',
-  ders1: 'Ders Kat. 1',
-  ders2: 'Ders Kat. 2',
-  ders3: 'Ders Kat. 3'
-};
-const colLetters = 'ABCDEFGH';
+'use strict';
 
-function updateColMap() {
-  const order = document.getElementById('colOrder').value.split(',');
-  const display = document.getElementById('colMapDisplay');
-  display.innerHTML = order.map((k, i) =>
-    `<div class="col-pill"><div class="letter">${colLetters[i]}</div><span>${colLabels[k]}</span></div>`
-  ).join('');
+/* ── THEME & COLOR ── */
+const html = document.documentElement;
+function setTheme(t) {
+  html.setAttribute('data-theme', t);
+  document.getElementById('btnDark').classList.toggle('active', t==='dark');
+  document.getElementById('btnLight').classList.toggle('active', t==='light');
+  try{localStorage.setItem('szip_theme',t);}catch(e){}
+}
+function setColor(c) {
+  html.setAttribute('data-color', c);
+  document.querySelectorAll('.pal').forEach(d=>d.classList.toggle('active',d.dataset.c===c));
+  try{localStorage.setItem('szip_color',c);}catch(e){}
+}
+(function(){
+  try{
+    const t=localStorage.getItem('szip_theme'), c=localStorage.getItem('szip_color');
+    if(t)setTheme(t); if(c)setColor(c);
+  }catch(e){}
+})();
+
+/* ── TAB SWITCH ── */
+function switchTab(t) {
+  ['extract','compress'].forEach(id=>{
+    document.getElementById('tab'+id.charAt(0).toUpperCase()+id.slice(1)).classList.toggle('active',id===t);
+    document.getElementById('panel'+id.charAt(0).toUpperCase()+id.slice(1)).classList.toggle('show',id===t);
+  });
 }
 
-function updateStats() {
-  const raw = document.getElementById('excelData').value.trim();
-  if (!raw) {
-    document.getElementById('statRows').textContent = '0';
-    document.getElementById('statCols').textContent = '0';
-    document.getElementById('statFilled').textContent = '0';
-    return;
+/* ── MAIL ── */
+function openMail(e) {
+  e.preventDefault();
+  window.location.href='mailto:?subject='+encodeURIComponent('sebasmobil S-Zip İletişim');
+}
+
+/* ── CHANGELOG ── */
+const APP_VERSION='Pro_1.0.01', LS_CL='szip_cl';
+function shouldShowChangelog() {
+  try{const d=JSON.parse(localStorage.getItem(LS_CL)||'null');if(!d)return true;if(d.version!==APP_VERSION)return true;return!d.dontShow;}catch(e){return true;}
+}
+function saveCLPref(ds){try{localStorage.setItem(LS_CL,JSON.stringify({version:APP_VERSION,dontShow:ds}));}catch(e){}}
+function openChangelog(){document.getElementById('dontShowCb').checked=false;document.getElementById('clOverlay').classList.add('show');setTimeout(updateScrollHint,120);}
+function closeChangelog(){saveCLPref(document.getElementById('dontShowCb').checked);document.getElementById('clOverlay').classList.remove('show');}
+function updateScrollHint(){const b=document.getElementById('clBody'),h=document.getElementById('clScrollHint');h.classList.toggle('hidden',b.scrollHeight<=b.clientHeight+12);}
+document.getElementById('clBody').addEventListener('scroll',function(){document.getElementById('clScrollHint').classList.toggle('hidden',this.scrollTop+this.clientHeight>=this.scrollHeight-22);});
+document.getElementById('clOkBtn').addEventListener('click',closeChangelog);
+document.getElementById('clOverlay').addEventListener('click',function(e){if(e.target===this)closeChangelog();});
+
+/* ── ERROR CATCHER ── */
+let _lastErr=null,_lastFile=null,_retryFn=null;
+function showError(err,subtitle,retryFn){
+  _lastErr=err; _retryFn=retryFn||null;
+  const now=new Date();
+  let msg='',file='—',line='—',type='—';
+  if(err instanceof Error){
+    msg=err.message||String(err);type=err.name||'Error';
+    if(err.stack){const sl=err.stack.split('\n');for(let i=1;i<sl.length;i++){const m=sl[i].match(/(?:at\s+.*?\s+\()?(.+?):(\d+):(\d+)\)?/);if(m){file=m[1].split('/').pop();line=m[2]+' : '+m[3];break;}}msg=err.message+'\n\nStack:\n'+sl.slice(1,5).join('\n');}
+  }else{msg=String(err);type='UnknownError';}
+  document.getElementById('errSubtitle').textContent=subtitle||'İşlem sırasında beklenmeyen bir hata meydana geldi.';
+  document.getElementById('errMessage').textContent=msg;
+  document.getElementById('errFile').textContent=_lastFile?_lastFile.name:file;
+  document.getElementById('errLine').textContent=line;
+  document.getElementById('errType').textContent=type;
+  document.getElementById('errTime').textContent=now.toLocaleTimeString('tr-TR')+' — '+now.toLocaleDateString('tr-TR');
+  document.getElementById('errOverlay').classList.add('show');
+}
+function closeErrModal(){document.getElementById('errOverlay').classList.remove('show');}
+function copyErrReport(){
+  const r=['=== S-Zip Pro Hata Raporu ===','Uygulama: S-Zip Pro 1.0.01','Zaman: '+document.getElementById('errTime').textContent,'Tür: '+document.getElementById('errType').textContent,'Satır: '+document.getElementById('errLine').textContent,'Dosya: '+document.getElementById('errFile').textContent,'---',document.getElementById('errMessage').textContent].join('\n');
+  navigator.clipboard.writeText(r).then(()=>toast('📋 Hata raporu kopyalandı!')).catch(()=>toast('⚠ Kopyalama başarısız'));
+}
+function retryAction(){closeErrModal();if(_retryFn)setTimeout(_retryFn,200);else if(_lastFile)setTimeout(()=>processFile(_lastFile),200);else window.location.reload();}
+window.addEventListener('error',e=>showError(e.error||new Error(e.message),'Beklenmeyen JavaScript hatası.'));
+window.addEventListener('unhandledrejection',e=>showError(e.reason instanceof Error?e.reason:new Error(String(e.reason)),'İşlenmemiş Promise hatası.'));
+
+/* ── EXTRACT STATE ── */
+let extractedFiles=[],currentFile=null,pwResolve=null;
+const dropZone=document.getElementById('dropZone'),fileInput=document.getElementById('fileInput');
+const statusBox=document.getElementById('statusBox'),statusDot=document.getElementById('statusDot'),statusText=document.getElementById('statusText');
+const progressFill=document.getElementById('progressFill'),progressLabel=document.getElementById('progressLabel'),progressPct=document.getElementById('progressPct');
+const fileTree=document.getElementById('fileTree'),fileList=document.getElementById('fileList'),archiveName=document.getElementById('archiveName'),fileCount=document.getElementById('fileCount'),searchInput=document.getElementById('searchInput');
+
+/* ── DRAG DROP (extract) ── */
+dropZone.addEventListener('dragover',e=>{e.preventDefault();dropZone.classList.add('dragover');});
+dropZone.addEventListener('dragleave',()=>dropZone.classList.remove('dragover'));
+dropZone.addEventListener('drop',e=>{e.preventDefault();dropZone.classList.remove('dragover');if(e.dataTransfer.files[0])processFile(e.dataTransfer.files[0]);});
+fileInput.addEventListener('change',e=>{if(e.target.files[0])processFile(e.target.files[0]);fileInput.value='';});
+dropZone.addEventListener('click',e=>{if(e.target.tagName!=='BUTTON')fileInput.click();});
+
+/* ── PROCESS ARCHIVE ── */
+async function processFile(file){
+  currentFile=file;_lastFile=file;extractedFiles=[];fileTree.classList.remove('show');searchInput.value='';
+  const ext=getExt(file.name);
+  showStat('proc');setProgress(0,'Dosya okunuyor...','0%');
+  try{
+    if(ext==='zip')await handleZip(file);
+    else await handleLibarchive(file);
+    showStat('done');renderFileTree(file.name);
+    updateBarStats();
+  }catch(err){
+    showStat('err');setStatusText('Hata: '+err.message);
+    showError(err,'"'+file.name+'" dosyası açılırken hata oluştu.',()=>processFile(file));
   }
-  const rows = raw.split('\n').filter(r => r.trim());
-  const cols = rows[0] ? rows[0].split('\t').length : 0;
-  let filled = 0;
-  rows.forEach(r => r.split('\t').forEach(c => { if (c.trim()) filled++; }));
-  document.getElementById('statRows').textContent = rows.length;
-  document.getElementById('statCols').textContent = cols;
-  document.getElementById('statFilled').textContent = filled;
 }
 
-function generateScript() {
-  const raw = document.getElementById('excelData').value.trim();
-  if (!raw) { alert('Lütfen Excel verisi yapıştırın!'); return; }
+function getExt(name){
+  const n=name.toLowerCase();
+  if(n.endsWith('.tar.gz')||n.endsWith('.tgz'))return 'tar.gz';
+  if(n.endsWith('.tar.bz2'))return 'tar.bz2';
+  if(n.endsWith('.tar.xz'))return 'tar.xz';
+  return n.split('.').pop();
+}
 
-  const order = document.getElementById('colOrder').value.split(',');
-  const rows = raw.split('\n').filter(r => r.trim()).map(r => r.split('\t').map(c => c.trim()));
+async function handleZip(file){
+  const buf=await readAB(file);let zip;
+  try{zip=await JSZip.loadAsync(buf);}
+  catch(e){if(e.message.toLowerCase().includes('password')){const pw=await askPw();zip=await JSZip.loadAsync(buf,{password:pw});}else throw e;}
+  const entries=Object.entries(zip.files);let done=0;
+  for(const[path,entry]of entries){
+    if(entry.dir){extractedFiles.push({name:path.split('/').filter(Boolean).pop()||path,path,size:0,blob:null,isDir:true});}
+    else{try{const b=await entry.async('blob');extractedFiles.push({name:entry.name.split('/').pop(),path,size:b.size,blob:b,isDir:false});}
+    catch(e){if(e.message.toLowerCase().includes('password')){const pw=await askPw();const b=await entry.async('blob',{password:pw});extractedFiles.push({name:entry.name.split('/').pop(),path,size:b.size,blob:b,isDir:false});}}}
+    done++;const pct=Math.round(done/entries.length*100);setProgress(pct,`${done}/${entries.length} dosya işlendi`,pct+'%');
+  }
+}
 
-  const colFieldMap = {
-    sinav1: 0, sinav2: 1, proje1: 2, proje2: 3,
-    ders1: 4, ders2: 5, ders3: 6
-  };
+async function handleLibarchive(file){
+  setProgress(10,'Kütüphane yükleniyor...','10%');
+  if(typeof Archive==='undefined')throw new Error('libarchive.js yüklenemedi. İnternet bağlantınızı kontrol edin (ilk yükleme için gerekli).');
+  const archive=await Archive.open(file);setProgress(30,'Arşiv açılıyor...','30%');
+  let obj;try{obj=await archive.extractFiles();}catch(e){throw new Error('Arşiv açılamadı: '+e.message);}
+  setProgress(60,'Dosyalar okunuyor...','60%');flattenObj(obj,'');setProgress(100,'Tamamlandı','100%');
+}
 
-  const dataArr = rows.map(cols => {
-    const obj = {};
-    order.forEach((key, i) => {
-      if (cols[i] !== undefined && cols[i] !== '') obj[key] = cols[i];
+function flattenObj(obj,prefix){
+  for(const[key,val]of Object.entries(obj)){
+    const fp=prefix?prefix+'/'+key:key;
+    if(val instanceof File||val instanceof Blob){extractedFiles.push({name:key,path:fp,size:val.size,blob:val,isDir:false});}
+    else if(typeof val==='object'&&val!==null){extractedFiles.push({name:key,path:fp+'/',size:0,blob:null,isDir:true});flattenObj(val,fp);}
+  }
+}
+
+function readAB(file){return new Promise((res,rej)=>{const r=new FileReader();r.onload=()=>res(r.result);r.onerror=()=>rej(new Error('Dosya okunamadı'));r.readAsArrayBuffer(file);});}
+function askPw(){return new Promise(resolve=>{pwResolve=resolve;document.getElementById('pwModal').classList.add('show');setTimeout(()=>document.getElementById('pwInput').focus(),100);});}
+function confirmPw(){const pw=document.getElementById('pwInput').value;document.getElementById('pwModal').classList.remove('show');document.getElementById('pwInput').value='';if(pwResolve){pwResolve(pw);pwResolve=null;}}
+function cancelPw(){document.getElementById('pwModal').classList.remove('show');document.getElementById('pwInput').value='';if(pwResolve){pwResolve('');pwResolve=null;}}
+
+function showStat(s){statusBox.classList.add('show');statusDot.className='status-dot';if(s==='done'){statusDot.classList.add('done');setStatusText('Arşiv başarıyla açıldı! ✓');}else if(s==='err'){statusDot.classList.add('err');}else setStatusText('İşleniyor...');}
+function setStatusText(t){statusText.textContent=t;}
+function setProgress(p,l,pct){progressFill.style.width=p+'%';progressLabel.textContent=l;progressPct.textContent=pct;}
+
+function renderFileTree(name){
+  archiveName.textContent=name;
+  const files=extractedFiles.filter(f=>!f.isDir);
+  fileCount.textContent=files.length+' dosya';
+  fileTree.classList.add('show');renderList(extractedFiles);
+}
+
+function renderList(items){
+  if(!items.length){fileList.innerHTML='<div class="empty-state">Dosya bulunamadı</div>';return;}
+  fileList.innerHTML=items.map((f,i)=>{
+    const icon=f.isDir?'📁':getIcon(f.name),size=f.isDir?'':fmtSize(f.size);
+    const dl=f.isDir?'':`<button class="file-dl" onclick="dlFile(${i})">↓</button>`;
+    const cb=f.isDir?'':`<input type="checkbox" class="file-cb" data-idx="${i}" onclick="event.stopPropagation()">`;
+    return`<div class="file-item${f.isDir?' folder':''}" onclick="toggleSel(${i})">${cb}<span class="file-icon">${icon}</span><span class="file-name" title="${f.path}">${f.path}</span><span class="file-size">${size}</span>${dl}</div>`;
+  }).join('');
+}
+
+function filterFiles(){const q=searchInput.value.toLowerCase();renderList(q?extractedFiles.filter(f=>f.path.toLowerCase().includes(q)):extractedFiles);}
+function toggleSel(i){const cb=document.querySelector(`.file-cb[data-idx="${i}"]`);if(cb){cb.checked=!cb.checked;cb.closest('.file-item').classList.toggle('selected',cb.checked);}}
+function selectAll(){document.querySelectorAll('.file-cb').forEach(cb=>{cb.checked=true;cb.closest('.file-item').classList.add('selected');});}
+function clearSel(){document.querySelectorAll('.file-cb').forEach(cb=>{cb.checked=false;cb.closest('.file-item').classList.remove('selected');});}
+function dlFile(i){const f=extractedFiles[i];if(!f||!f.blob)return;triggerDL(f.blob,f.name);toast('⬇ İndiriliyor: '+f.name);}
+async function dlSelected(){
+  const ch=[...document.querySelectorAll('.file-cb:checked')].map(cb=>parseInt(cb.dataset.idx));
+  if(!ch.length){toast('⚠ Önce dosya seçin');return;}
+  if(ch.length===1){dlFile(ch[0]);return;}
+  toast('📦 ZIP oluşturuluyor...');const zip=new JSZip();
+  ch.forEach(i=>{const f=extractedFiles[i];if(f&&f.blob)zip.file(f.path,f.blob);});
+  const blob=await zip.generateAsync({type:'blob'});triggerDL(blob,'secilen_dosyalar.zip');toast('✅ '+ch.length+' dosya indirildi');
+}
+async function dlAll(){
+  const files=extractedFiles.filter(f=>!f.isDir&&f.blob);
+  if(!files.length){toast('⚠ İndirilecek dosya yok');return;}
+  toast('📦 Paketleniyor...');const zip=new JSZip();
+  files.forEach(f=>zip.file(f.path,f.blob));
+  const blob=await zip.generateAsync({type:'blob',compression:'DEFLATE',onUpdate:m=>setProgress(m.percent,'ZIP oluşturuluyor...',Math.round(m.percent)+'%')});
+  triggerDL(blob,(currentFile?currentFile.name.split('.')[0]:'arsiv')+'_cikartildi.zip');
+  toast('✅ Tüm dosyalar indirildi!');
+}
+
+/* ── BAR STATS ── */
+function updateBarStats(){
+  const files=extractedFiles.filter(f=>!f.isDir);
+  const total=files.reduce((s,f)=>s+f.size,0);
+  document.getElementById('barFileCount').textContent=files.length||'—';
+  document.getElementById('barTotalSize').textContent=files.length?fmtSize(total):'—';
+  document.getElementById('barFormat').textContent=currentFile?getExt(currentFile.name).toUpperCase():'—';
+}
+
+/* ── COMPRESS ── */
+let compFiles=[];
+let compResultBlob=null;
+
+const compInput=document.getElementById('compInput');
+const compDrop=document.getElementById('compDrop');
+
+compInput.addEventListener('change',e=>{
+  if(e.target.files.length)addCompFiles(Array.from(e.target.files));
+  compInput.value='';
+});
+
+compDrop.addEventListener('dragover',e=>{e.preventDefault();compDrop.classList.add('dragover');});
+compDrop.addEventListener('dragleave',()=>compDrop.classList.remove('dragover'));
+compDrop.addEventListener('drop',e=>{
+  e.preventDefault();compDrop.classList.remove('dragover');
+  if(e.dataTransfer.files.length)addCompFiles(Array.from(e.dataTransfer.files));
+});
+compDrop.addEventListener('click',e=>{if(e.target.tagName!=='BUTTON')compInput.click();});
+
+function addCompFiles(newFiles){
+  newFiles.forEach(f=>{if(!compFiles.find(x=>x.name===f.name&&x.size===f.size))compFiles.push(f);});
+  renderCompFiles();
+}
+
+function renderCompFiles(){
+  const box=document.getElementById('compFilesBox'),list=document.getElementById('compFilesList');
+  const cnt=document.getElementById('compFileCount'),siz=document.getElementById('compTotalSize');
+  if(!compFiles.length){box.classList.remove('show');document.getElementById('compGoBtn').disabled=true;document.getElementById('compResult').classList.remove('show');return;}
+  box.classList.add('show');
+  const total=compFiles.reduce((s,f)=>s+f.size,0);
+  cnt.textContent=compFiles.length+' dosya';
+  siz.textContent=fmtSize(total);
+  list.innerHTML=compFiles.map((f,i)=>`
+    <div class="comp-file-row">
+      <span class="comp-file-icon">${getIcon(f.name)}</span>
+      <span class="comp-file-name" title="${f.name}">${f.name}</span>
+      <span class="comp-file-size">${fmtSize(f.size)}</span>
+      <button class="comp-file-del" onclick="removeCompFile(${i})" title="Kaldır">✕</button>
+    </div>`).join('');
+  document.getElementById('compGoBtn').disabled=false;
+}
+
+function removeCompFile(i){compFiles.splice(i,1);renderCompFiles();}
+function clearCompFiles(){compFiles=[];renderCompFiles();}
+
+function toggleCompPw(){
+  const on=document.getElementById('compPwToggle').checked;
+  document.getElementById('compPwField').classList.toggle('show',on);
+}
+
+async function startCompress(){
+  if(!compFiles.length)return;
+  const zipName=document.getElementById('compZipName').value.trim()||'arsiv.zip';
+  const method=document.getElementById('compMethod').value;
+  const level=parseInt(document.getElementById('compLevel').value);
+  const usePw=document.getElementById('compPwToggle').checked;
+  const pw=usePw?document.getElementById('compPwInput').value:'';
+  if(usePw&&!pw){toast('⚠ Şifre girilmedi');document.getElementById('compPwInput').focus();return;}
+
+  const statusB=document.getElementById('compStatusBox'),dot=document.getElementById('compStatusDot'),stxt=document.getElementById('compStatusText');
+  const pFill=document.getElementById('compProgressFill'),pLabel=document.getElementById('compProgressLabel'),pPct=document.getElementById('compProgressPct');
+  const result=document.getElementById('compResult');
+
+  statusB.classList.add('show');dot.className='status-dot';result.classList.remove('show');
+  stxt.textContent='ZIP oluşturuluyor...';pFill.style.width='0%';
+
+  const origTotal=compFiles.reduce((s,f)=>s+f.size,0);
+
+  try{
+    const zip=new JSZip();
+    let done=0;
+    for(const file of compFiles){
+      const buf=await readAB(file);
+      const opts={binary:true};
+      if(pw)opts.dosPermissions=0;
+      zip.file(file.name,buf,method==='STORE'?{compression:'STORE'}:{});
+      done++;
+      const pct=Math.round(done/compFiles.length*50);
+      pFill.style.width=pct+'%';pLabel.textContent=`${done}/${compFiles.length} dosya eklendi`;pPct.textContent=pct+'%';
+    }
+
+    const zipOpts={type:'blob',compression:method,compressionOptions:{level}};
+    if(pw)zipOpts.comment='szip_encrypted';
+
+    const blob=await zip.generateAsync(zipOpts,m=>{
+      const pct=50+Math.round(m.percent*.5);
+      pFill.style.width=pct+'%';
+      pLabel.textContent='Sıkıştırılıyor...';
+      pPct.textContent=pct+'%';
     });
-    return obj;
-  }).filter(o => o.okul_no);
 
-  const dataJSON = JSON.stringify(dataArr, null, 2);
+    compResultBlob=blob;
+    const fn=zipName.endsWith('.zip')?zipName:zipName+'.zip';
 
-  const inputKeys = order.filter(k => k !== 'okul_no');
+    dot.classList.add('done');stxt.textContent='Sıkıştırma tamamlandı! ✓';
+    pFill.style.width='100%';pLabel.textContent='Tamamlandı';pPct.textContent='100%';
 
-  const script =
-`(function() {
-  // E-okul Not Girisi Yardimcisi - Otomatik doldurma
-  const data = ${dataJSON};
+    // Stats
+    document.getElementById('resBefore').textContent=fmtSize(origTotal);
+    document.getElementById('resAfter').textContent=fmtSize(blob.size);
+    const saved=Math.max(0,Math.round((1-blob.size/origTotal)*100));
+    document.getElementById('resRatio').textContent=saved+'% küçük';
+    result.classList.add('show');
 
-  const rows = document.querySelectorAll('table tbody tr');
-  let updated = 0;
+    const dlBtn=document.getElementById('compDlBtn');
+    dlBtn.onclick=()=>{triggerDL(compResultBlob,fn);toast('⬇ '+fn+' indiriliyor...');};
+    toast('✅ '+fn+' hazır!');
 
-  rows.forEach(row => {
-    const cells = row.querySelectorAll('td');
-    if (!cells.length) return;
+    // Update bottom bar
+    document.getElementById('barFileCount').textContent=compFiles.length;
+    document.getElementById('barTotalSize').textContent=fmtSize(blob.size);
+    document.getElementById('barFormat').textContent='ZIP';
 
-    const okulNo = cells[0] && cells[0].textContent.trim();
-    const entry = data.find(d => String(d.okul_no) === String(okulNo));
-    if (!entry) return;
-
-    const inputs = row.querySelectorAll('input[type=text], input[type=number], input:not([type=checkbox]):not([type=radio]):not([type=hidden])');
-    const keys = ${JSON.stringify(inputKeys)};
-
-    keys.forEach((key, i) => {
-      if (entry[key] !== undefined && inputs[i]) {
-        inputs[i].value = entry[key];
-        inputs[i].dispatchEvent(new Event('input', { bubbles: true }));
-        inputs[i].dispatchEvent(new Event('change', { bubbles: true }));
-        inputs[i].dispatchEvent(new Event('blur', { bubbles: true }));
-      }
-    });
-    updated++;
-  });
-
-  console.log('%c E-okul Not Giris ', 'background:#4f8ef7;color:white;padding:2px 6px;border-radius:4px;',
-    updated + ' ogrenci guncellendi. Kaydetmeyi unutmayin!');
-  alert(updated + ' ogrenci guncellendi! Lutfen Kaydet butonuna basin.');
-})();`;
-
-  const out = document.getElementById('scriptOutput');
-  out.textContent = script;
-
-  document.getElementById('outputSection').classList.add('visible');
-  document.getElementById('outputSection').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  }catch(err){
+    dot.classList.add('err');stxt.textContent='Hata: '+err.message;
+    showError(err,'ZIP sıkıştırması sırasında hata oluştu.',startCompress);
+  }
 }
 
-function copyScript() {
-  const text = document.getElementById('scriptOutput').textContent;
-  if (!text) return;
-  navigator.clipboard.writeText(text).then(() => {
-    const btn = document.getElementById('copyBtn');
-    btn.textContent = '✓ Kopyalandı!';
-    setTimeout(() => btn.textContent = '📋 Kodu Kopyala', 2500);
-  }).catch(() => {
-    const ta = document.createElement('textarea');
-    ta.value = text;
-    document.body.appendChild(ta);
-    ta.select();
-    document.execCommand('copy');
-    document.body.removeChild(ta);
-    const btn = document.getElementById('copyBtn');
-    btn.textContent = '✓ Kopyalandı!';
-    setTimeout(() => btn.textContent = '📋 Kodu Kopyala', 2500);
-  });
-}
+/* ── UTILS ── */
+function triggerDL(blob,name){const url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download=name;document.body.appendChild(a);a.click();document.body.removeChild(a);setTimeout(()=>URL.revokeObjectURL(url),10000);}
+function fmtSize(b){if(!b)return'0 B';const k=1024,s=['B','KB','MB','GB'],i=Math.floor(Math.log(b)/Math.log(k));return parseFloat((b/Math.pow(k,i)).toFixed(1))+' '+s[i];}
+function getIcon(name){const e=name.split('.').pop().toLowerCase();const m={pdf:'📄',doc:'📝',docx:'📝',txt:'📃',md:'📋',jpg:'🖼',jpeg:'🖼',png:'🖼',gif:'🖼',svg:'🎨',webp:'🖼',mp4:'🎬',avi:'🎬',mkv:'🎬',mov:'🎬',mp3:'🎵',wav:'🎵',flac:'🎵',ogg:'🎵',html:'🌐',css:'🎨',js:'⚡',ts:'⚡',jsx:'⚛',tsx:'⚛',py:'🐍',java:'☕',cpp:'⚙',c:'⚙',go:'🔵',rs:'🦀',zip:'📦',rar:'📦','7z':'📦',tar:'📦',exe:'⚙',sh:'📜',bat:'📜',json:'🔧',xml:'🔧',yaml:'🔧',yml:'🔧',xls:'📊',xlsx:'📊',csv:'📊',ppt:'📊',pptx:'📊',db:'🗄',sql:'🗄',ttf:'🔤',otf:'🔤',woff:'🔤'};return m[e]||'📄';}
+let _tt;
+function toast(msg){const el=document.getElementById('toast');el.textContent=msg;el.classList.add('show');clearTimeout(_tt);_tt=setTimeout(()=>el.classList.remove('show'),3200);}
 
-function clearAll() {
-  document.getElementById('excelData').value = '';
-  document.getElementById('outputSection').classList.remove('visible');
-  updateStats();
-}
-
-// Init
-updateColMap();
+/* ── INIT ── */
+if(typeof Archive!=='undefined'){Archive.init({workerUrl:'https://cdn.jsdelivr.net/npm/libarchive.js@1.3.0/dist/worker-bundle.js'});}
+window.addEventListener('DOMContentLoaded',()=>{if(shouldShowChangelog())setTimeout(openChangelog,500);});
 </script>
 </body>
 </html>
