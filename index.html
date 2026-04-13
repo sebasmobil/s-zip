@@ -3,7 +3,13 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>S-Zip Pro 1.0</title>
+<title>S-Zip Pro 1.0.02</title>
+<!--
+  S-Zip Pro 1.0.02
+  © sebasmobil
+  GNU Affero General Public License Version 3 (GNU AGPL v3)
+  https://www.gnu.org/licenses/agpl-3.0.html
+-->
 <!-- Sadece JSZip - ZIP/GZIP/TAR için. RAR/7Z kendi parser'ımız -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
 <style>
@@ -331,30 +337,35 @@ footer{text-align:center;margin-top:36px;color:var(--muted);font-size:11px;font-
 <div class="cl-overlay" id="clOverlay">
   <div class="cl-modal">
     <div class="cl-header">
-      <div class="cl-header-top"><span class="cl-app-label">S-ZIP PRO</span><span class="cl-ver-badge">Pro 1.0</span></div>
+      <div class="cl-header-top"><span class="cl-app-label">S-ZIP PRO</span><span class="cl-ver-badge">Pro 1.0.02</span></div>
       <div class="cl-title">Yenilikler 🎉</div>
       <div class="cl-subtitle">Bu sürümde neler değişti — aşağı kaydır</div>
     </div>
     <div class="cl-body" id="clBody">
       <div class="cl-section">
-        <div class="cl-section-label new">✦ Yeni</div>
-        <div class="cl-item"><div class="cl-item-icon">📦</div><div><div class="cl-item-name">S-Zip Pro 1.0 Yayında!</div><div class="cl-item-desc">Tamamen yeniden tasarlanan arayüz ve saf JS tabanlı format desteğiyle S-Zip Pro'ya hoş geldiniz.</div></div></div>
+        <div class="cl-section-label new">✦ 1.0.02 — Yeni</div>
+        <div class="cl-item"><div class="cl-item-icon">📁</div><div><div class="cl-item-name">Klasör Yapısıyla Kaydetme</div><div class="cl-item-desc">Arşiv içindeki tüm dosyalar, orijinal klasör hiyerarşisi korunarak ZIP olarak paketlenip kaydedilebilir. RAR/7Z listesi için de çalışır.</div></div></div>
+        <div class="cl-item"><div class="cl-item-icon">📂</div><div><div class="cl-item-name">Klasör Olarak İndir</div><div class="cl-item-desc">ZIP dosyalarında her klasör ayrı ayrı ZIP olarak da indirilebilir. Ağaç görünümünde klasör ikonuna tıklayın.</div></div></div>
+        <div class="cl-item"><div class="cl-item-icon">⚖️</div><div><div class="cl-item-name">GNU AGPL v3 Lisansı</div><div class="cl-item-desc">S-Zip Pro artık GNU Affero General Public License Version 3 ile lisanslanmıştır. © sebasmobil</div></div></div>
+      </div>
+      <div class="cl-section">
+        <div class="cl-section-label new">✦ 1.0 — Özellikler</div>
+        <div class="cl-item"><div class="cl-item-icon">📦</div><div><div class="cl-item-name">S-Zip Pro Yayında!</div><div class="cl-item-desc">Tamamen yeniden tasarlanan arayüz ve saf JS tabanlı format desteğiyle S-Zip Pro'ya hoş geldiniz.</div></div></div>
         <div class="cl-item"><div class="cl-item-icon">🗜️</div><div><div class="cl-item-name">Dosya Sıkıştırma</div><div class="cl-item-desc">Birden fazla dosyayı seçip ZIP olarak sıkıştırın. Seviye, şifre ve dosya adı ayarlanabilir.</div></div></div>
         <div class="cl-item"><div class="cl-item-icon">🌙</div><div><div class="cl-item-name">Gece / Gündüz Teması</div><div class="cl-item-desc">Karanlık ve aydınlık tema arasında anında geçiş. Tercih otomatik kaydedilir.</div></div></div>
         <div class="cl-item"><div class="cl-item-icon">🎨</div><div><div class="cl-item-name">5 Renk Teması</div><div class="cl-item-desc">Yeşil, Mor, Mavi, Turuncu ve Pembe aksent rengi seçenekleri.</div></div></div>
         <div class="cl-item"><div class="cl-item-icon">🚨</div><div><div class="cl-item-name">Akıllı Hata Yakalayıcı</div><div class="cl-item-desc">Hata paneli: mesaj, satır, dosya, zaman. Kopyala & Yenile butonları.</div></div></div>
-        <div class="cl-item"><div class="cl-item-icon">🔬</div><div><div class="cl-item-name">Magic Byte Tespiti</div><div class="cl-item-desc">Uzantıya değil, dosyanın gerçek içeriğine bakarak format belirleme. Daha güvenilir.</div></div></div>
+        <div class="cl-item"><div class="cl-item-icon">🔬</div><div><div class="cl-item-name">Magic Byte Tespiti</div><div class="cl-item-desc">Uzantıya değil, dosyanın gerçek içeriğine bakarak format belirleme.</div></div></div>
       </div>
       <div class="cl-section">
         <div class="cl-section-label imp">⬆ Format Desteği</div>
-        <div class="cl-item"><div class="cl-item-icon">📮</div><div><div class="cl-item-name">ZIP — Tam Destek</div><div class="cl-item-desc">Şifreli ZIP dahil. Dosya seçimi, toplu indirme, arama. Saf JS ile çalışır.</div></div></div>
+        <div class="cl-item"><div class="cl-item-icon">📮</div><div><div class="cl-item-name">ZIP — Tam Destek</div><div class="cl-item-desc">Şifreli ZIP dahil. Klasör yapısıyla tam çıkarma ve indirme.</div></div></div>
         <div class="cl-item"><div class="cl-item-icon">🌀</div><div><div class="cl-item-name">GZIP / TAR.GZ — Tam Destek</div><div class="cl-item-desc">GZ sıkıştırmalı dosyalar ve TAR.GZ arşivleri açılabilir.</div></div></div>
-        <div class="cl-item"><div class="cl-item-icon">🗜️</div><div><div class="cl-item-name">RAR / 7Z — Header Analizi</div><div class="cl-item-desc">Dosya listesi ve meta bilgisi gösterilir. İçerik çıkarımı için WebAssembly gerekir (GitHub Pages'de tam çalışır).</div></div></div>
+        <div class="cl-item"><div class="cl-item-icon">🗜️</div><div><div class="cl-item-name">RAR / 7Z — Header Analizi + Toplu Kayıt</div><div class="cl-item-desc">Dosya listesi ve klasör yapısı gösterilir. "ZIP Olarak Kaydet" ile tüm yapı korunur.</div></div></div>
       </div>
       <div class="cl-section">
-        <div class="cl-section-label fix">🔧 Düzeltmeler</div>
-        <div class="cl-item"><div class="cl-item-icon">🛡️</div><div><div class="cl-item-name">%100 Gizlilik</div><div class="cl-item-desc">Hiçbir dosya sunucuya gönderilmez. Tüm işlemler tarayıcı içinde.</div></div></div>
-        <div class="cl-item"><div class="cl-item-icon">📂</div><div><div class="cl-item-name">Klasör Yapısı</div><div class="cl-item-desc">İç içe klasör hiyerarşisi doğru gösteriliyor ve indiriliyor.</div></div></div>
+        <div class="cl-section-label fix">⚖️ Lisans</div>
+        <div class="cl-item"><div class="cl-item-icon">©️</div><div><div class="cl-item-name">© sebasmobil</div><div class="cl-item-desc">Bu yazılım GNU Affero General Public License Version 3 (GNU AGPL v3) ile lisanslanmıştır. Kaynak kodu serbestçe kullanılabilir, değiştirilebilir ve dağıtılabilir; ancak aynı lisans korunmalıdır.</div></div></div>
       </div>
     </div>
     <div class="cl-scroll-hint" id="clScrollHint">▼ &nbsp;Devamı için kaydır</div>
@@ -411,7 +422,7 @@ footer{text-align:center;margin-top:36px;color:var(--muted);font-size:11px;font-
   <div class="topbar">
     <div class="topbar-left">
       <div class="app-icon">📦</div>
-      <div><div class="app-name">S-<span>Zip</span></div><span class="app-ver">PRO 1.0</span></div>
+      <div><div class="app-name">S-<span>Zip</span></div><span class="app-ver">PRO 1.0.02</span></div>
     </div>
     <div class="topbar-right">
       <div class="palette-wrap" title="Renk Teması">
@@ -490,6 +501,7 @@ footer{text-align:center;margin-top:36px;color:var(--muted);font-size:11px;font-
           <button class="action-btn" onclick="clearSel()">☐ Temizle</button>
           <button class="action-btn primary" id="btnDlSelected" onclick="dlSelected()">⬇ Seçilenleri İndir</button>
           <button class="action-btn primary" id="btnDlAll" onclick="dlAll()">📦 Tümünü İndir</button>
+          <button class="action-btn" id="btnDlFolder" onclick="dlAsFolder()" style="display:none;border-color:rgba(var(--acc2-rgb),.4);color:var(--acc2)">📁 Klasör Yapısıyla Kaydet</button>
         </div>
       </div>
       <div class="search-bar">
@@ -590,17 +602,17 @@ footer{text-align:center;margin-top:36px;color:var(--muted);font-size:11px;font-
         <li>Sınır yok, büyük dosya desteklenir</li><li>Şifre tarayıcıda uygulanır</li>
       </ul>
     </div>
-  </div>
+  </div><!-- /panelCompress -->
 
-  <footer>S-Zip Pro 1.0 — Çevrimdışı arşiv yöneticisi</footer>
-</div>
+  <footer>S-Zip Pro 1.0.02 — © sebasmobil — GNU AGPL v3</footer>
+</div><!-- /page -->
 
 <!-- BOTTOM BAR -->
 <div class="bottom-bar">
   <div class="bar-info-pill">
     <div class="bar-logo">📦</div>
     <div><div class="bar-appname">S-<span>Zip</span></div></div>
-    <span class="bar-ver-tag">Pro 1.0</span>
+    <span class="bar-ver-tag">Pro 1.0.02</span>
   </div>
   <div class="bar-center">
     <div class="bar-stat"><span class="bar-stat-val" id="barFileCount">—</span><span class="bar-stat-label">DOSYA</span></div>
@@ -623,6 +635,13 @@ footer{text-align:center;margin-top:36px;color:var(--muted);font-size:11px;font-
 <script>
 'use strict';
 
+/*
+ * S-Zip Pro 1.0.02
+ * © sebasmobil
+ * GNU Affero General Public License Version 3 (GNU AGPL v3)
+ * https://www.gnu.org/licenses/agpl-3.0.html
+ */
+
 /* ══ THEME & COLOR ══ */
 const html = document.documentElement;
 function setTheme(t){html.setAttribute('data-theme',t);document.getElementById('btnDark').classList.toggle('active',t==='dark');document.getElementById('btnLight').classList.toggle('active',t==='light');try{localStorage.setItem('szip_theme',t);}catch(e){}}
@@ -636,7 +655,7 @@ function switchTab(t){['extract','compress'].forEach(id=>{const cap=id.charAt(0)
 function openMail(e){e.preventDefault();window.location.href='mailto:?subject='+encodeURIComponent('sebasmobil S-Zip İletişim');}
 
 /* ══ CHANGELOG ══ */
-const APP_VERSION='Pro_1.0',LS_CL='szip_cl';
+const APP_VERSION='Pro_1.0.02',LS_CL='szip_cl';
 function shouldShowChangelog(){try{const d=JSON.parse(localStorage.getItem(LS_CL)||'null');if(!d)return true;if(d.version!==APP_VERSION)return true;return!d.dontShow;}catch(e){return true;}}
 function saveCLPref(ds){try{localStorage.setItem(LS_CL,JSON.stringify({version:APP_VERSION,dontShow:ds}));}catch(e){}}
 function openChangelog(){document.getElementById('dontShowCb').checked=false;document.getElementById('clOverlay').classList.add('show');setTimeout(()=>{const b=document.getElementById('clBody'),h=document.getElementById('clScrollHint');h.classList.toggle('hidden',b.scrollHeight<=b.clientHeight+12);},120);}
@@ -660,7 +679,7 @@ function showError(err,subtitle,retryFn){
   document.getElementById('errOverlay').classList.add('show');
 }
 function closeErrModal(){document.getElementById('errOverlay').classList.remove('show');}
-function copyErrReport(){const r=['=== S-Zip Pro 1.0 Hata Raporu ===','Zaman: '+document.getElementById('errTime').textContent,'Tür: '+document.getElementById('errType').textContent,'Satır: '+document.getElementById('errLine').textContent,'Dosya: '+document.getElementById('errFile').textContent,'---',document.getElementById('errMessage').textContent].join('\n');navigator.clipboard.writeText(r).then(()=>toast('📋 Kopyalandı!')).catch(()=>toast('⚠ Kopyalama başarısız'));}
+function copyErrReport(){const r=['=== S-Zip Pro 1.0.02 Hata Raporu ===','Zaman: '+document.getElementById('errTime').textContent,'Tür: '+document.getElementById('errType').textContent,'Satır: '+document.getElementById('errLine').textContent,'Dosya: '+document.getElementById('errFile').textContent,'---',document.getElementById('errMessage').textContent].join('\n');navigator.clipboard.writeText(r).then(()=>toast('📋 Kopyalandı!')).catch(()=>toast('⚠ Kopyalama başarısız'));}
 function retryAction(){closeErrModal();if(_retryFn)setTimeout(_retryFn,200);else if(_lastFile)setTimeout(()=>processFile(_lastFile),200);else window.location.reload();}
 window.addEventListener('error',e=>showError(e.error||new Error(e.message),'Beklenmeyen JavaScript hatası.'));
 window.addEventListener('unhandledrejection',e=>showError(e.reason instanceof Error?e.reason:new Error(String(e.reason)),'İşlenmemiş Promise hatası.'));
@@ -731,30 +750,35 @@ async function processFile(file){
       await handleZip(file);
       document.getElementById('btnDlSelected').style.display='';
       document.getElementById('btnDlAll').style.display='';
+      document.getElementById('btnDlFolder').style.display='';
     }
     else if(fmt==='gz'){
       showNotice('info','🌀 GZIP/TAR.GZ formatı — Tam destek aktif.');
       await handleGzip(file);
       document.getElementById('btnDlSelected').style.display='';
       document.getElementById('btnDlAll').style.display='';
+      document.getElementById('btnDlFolder').style.display='';
     }
     else if(fmt==='rar4'||fmt==='rar5'){
-      showNotice('warn','🗜️ RAR formatı tespit edildi ('+(fmt==='rar5'?'RAR5':'RAR4')+').\n\nBu ortamda (claude.ai) WebAssembly çalışmaz. Dosya listesi ve boyut bilgisi gösterilmektedir.\n\n★ GitHub Pages\'e yüklerseniz tam çıkarma desteği aktif olur.');
+      showNotice('warn','🗜️ RAR formatı tespit edildi ('+(fmt==='rar5'?'RAR5':'RAR4')+').\n\nDosya listesi ve klasör yapısı gösteriliyor. "📁 Klasör Yapısıyla Kaydet" butonu ile tüm yapıyı ZIP olarak kaydedebilirsiniz.\n\n★ GitHub Pages\'e yüklerseniz gerçek dosya içerikleri de çıkarılabilir.');
       await handleRarHeader(file);
       document.getElementById('btnDlSelected').style.display='none';
       document.getElementById('btnDlAll').style.display='none';
+      document.getElementById('btnDlFolder').style.display='';
     }
     else if(fmt==='7z'){
-      showNotice('warn','🔷 7-Zip formatı tespit edildi.\n\nBu ortamda (claude.ai) WebAssembly çalışmaz. Header bilgisi okundu.\n\n★ GitHub Pages\'e yüklerseniz tam çıkarma desteği aktif olur.');
+      showNotice('warn','🔷 7-Zip formatı tespit edildi.\n\nDosya listesi gösteriliyor. "📁 Klasör Yapısıyla Kaydet" ile yapıyı koruyarak ZIP olarak kaydedebilirsiniz.\n\n★ GitHub Pages\'e yüklerseniz gerçek dosya içerikleri de çıkarılabilir.');
       await handle7zHeader(file);
       document.getElementById('btnDlSelected').style.display='none';
       document.getElementById('btnDlAll').style.display='none';
+      document.getElementById('btnDlFolder').style.display='';
     }
     else{
       showNotice('warn','⚠️ "'+fmt.toUpperCase()+'" formatı bu ortamda (claude.ai) desteklenmiyor.\n\nZIP ve GZ dosyaları tam çalışır. GitHub Pages\'e yükleyerek tüm formatları açabilirsiniz.');
       handleUnknownHeader(file,fmt);
       document.getElementById('btnDlSelected').style.display='none';
       document.getElementById('btnDlAll').style.display='none';
+      document.getElementById('btnDlFolder').style.display='';
     }
 
     showStat('done');renderFileTree(file.name);updateBarStats();
@@ -1090,9 +1114,53 @@ async function dlSelected(){
   ch.forEach(i=>{const f=extractedFiles[i];if(f&&f.blob)zip.file(f.path,f.blob);});
   const blob=await zip.generateAsync({type:'blob'});triggerDL(blob,'secilen_dosyalar.zip');toast('✅ '+ch.length+' dosya indirildi');
 }
+/* ══ DOWNLOAD AS FOLDER (klasör yapısıyla ZIP) ══ */
+async function dlAsFolder(){
+  // ZIP veya metadata dosyalarının tümünü klasör yapısıyla ZIP'e koy
+  const allFiles = extractedFiles.filter(f => !f.isDir);
+  if(!allFiles.length){ toast('⚠ Dosya listesi boş'); return; }
+
+  toast('📁 Klasör yapısı oluşturuluyor...');
+  const zip = new JSZip();
+  let added = 0;
+
+  for(const f of allFiles){
+    if(f.blob && f.canDl){
+      // Gerçek dosya verisi var — tam path ile ekle
+      zip.file(f.path, f.blob);
+      added++;
+    } else {
+      // Sadece meta bilgisi var (RAR/7Z liste modu)
+      // Boş placeholder dosya ekle — klasör yapısı korunsun
+      const placeholder = new Blob(
+        ['[S-Zip Pro]\nBu dosya arşivden çıkarılamadı.\nOrijinal: '+f.path+'\nBoyut: '+fmtSize(f.size)+'\n\nTam çıkarma için GitHub Pages üzerinden açın.'],
+        {type:'text/plain'}
+      );
+      zip.file(f.path, placeholder);
+      added++;
+    }
+  }
+
+  if(!added){ toast('⚠ Eklenecek dosya yok'); return; }
+
+  const baseName = currentFile ? currentFile.name.replace(/\.[^.]+$/,'') : 'arsiv';
+  const zipName = baseName + '_klasor.zip';
+
+  const blob = await zip.generateAsync({
+    type:'blob', compression:'DEFLATE', compressionOptions:{level:6},
+    onUpdate: m => setProgress(m.percent, 'ZIP oluşturuluyor...', Math.round(m.percent)+'%')
+  });
+
+  triggerDL(blob, zipName);
+  toast('✅ '+zipName+' indiriliyor — '+added+' dosya, klasör yapısı korundu');
+}
+
 async function dlAll(){
   const files=extractedFiles.filter(f=>!f.isDir&&f.blob&&f.canDl);
-  if(!files.length){toast('⚠ İndirilecek dosya yok');return;}
+  if(!files.length){
+    // Hiç indirilebilir dosya yoksa klasör yapısıyla kaydet
+    await dlAsFolder(); return;
+  }
   toast('📦 Paketleniyor...');const zip=new JSZip();
   files.forEach(f=>zip.file(f.path,f.blob));
   const blob=await zip.generateAsync({type:'blob',compression:'DEFLATE',onUpdate:m=>setProgress(m.percent,'ZIP oluşturuluyor...',Math.round(m.percent)+'%')});
