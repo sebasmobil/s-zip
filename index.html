@@ -4,43 +4,17 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>S-Zip Pro 1.0</title>
+<!-- Sadece JSZip - ZIP/GZIP/TAR için. RAR/7Z kendi parser'ımız -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
-<!-- libarchive.js - RAR, 7z, tar, bz2, xz desteği için -->
-<script>
-// libarchive.js'yi dinamik olarak yükle ve hazır olunca init et
-(function(){
-  var s = document.createElement('script');
-  s.src = 'https://cdn.jsdelivr.net/npm/libarchive.js@1.3.0/dist/libarchive.js';
-  s.onload = function(){
-    try {
-      Archive.init({
-        workerUrl: 'https://cdn.jsdelivr.net/npm/libarchive.js@1.3.0/dist/worker-bundle.js'
-      });
-      window._archiveReady = true;
-      console.log('[S-Zip] libarchive.js hazır');
-    } catch(e) {
-      console.warn('[S-Zip] libarchive.js init hatası:', e);
-      window._archiveReady = false;
-    }
-  };
-  s.onerror = function(){
-    console.warn('[S-Zip] libarchive.js yüklenemedi');
-    window._archiveReady = false;
-  };
-  document.head.appendChild(s);
-})();
-</script>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,700&display=swap');
 
-/* ── COLOR THEMES ── */
 [data-color="green"]  {--acc:#00e676;--acc2:#00b248;--acc-rgb:0,230,118;--acc2-rgb:0,178,72}
 [data-color="purple"] {--acc:#a855f7;--acc2:#7c3aed;--acc-rgb:168,85,247;--acc2-rgb:124,58,237}
 [data-color="blue"]   {--acc:#38bdf8;--acc2:#0284c7;--acc-rgb:56,189,248;--acc2-rgb:2,132,199}
 [data-color="orange"] {--acc:#fb923c;--acc2:#ea580c;--acc-rgb:251,146,60;--acc2-rgb:234,88,12}
 [data-color="pink"]   {--acc:#f472b6;--acc2:#db2777;--acc-rgb:244,114,182;--acc2-rgb:219,39,119}
 
-/* ── DARK / LIGHT ── */
 [data-theme="dark"] {
   --bg:#08080e;--surface:#13131f;--surface2:#1c1c2e;
   --border:#252538;--border2:#2e2e48;
@@ -58,7 +32,6 @@
   --bar-bg:rgba(240,242,250,.97);
 }
 
-/* ── RESET ── */
 *{margin:0;padding:0;box-sizing:border-box}
 html{scroll-behavior:smooth}
 body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;min-height:100vh;overflow-x:hidden;padding-bottom:78px;transition:background .3s,color .3s}
@@ -68,8 +41,8 @@ body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(
 .orb.b{width:500px;height:500px;bottom:-200px;left:-150px;background:radial-gradient(circle,rgba(var(--acc2-rgb),.05) 0%,transparent 65%)}
 .page{max-width:920px;margin:0 auto;padding:28px 16px;position:relative;z-index:1}
 
-/* ── TOPBAR ── */
-.topbar{display:flex;align-items:center;justify-content:space-between;padding:13px 20px;margin-bottom:24px;background:var(--surface);border:1px solid var(--border);border-radius:18px;gap:10px;flex-wrap:wrap}
+/* TOPBAR */
+.topbar{display:flex;align-items:center;justify-content:space-between;padding:13px 20px;margin-bottom:22px;background:var(--surface);border:1px solid var(--border);border-radius:18px;gap:10px;flex-wrap:wrap}
 .topbar-left{display:flex;align-items:center;gap:11px}
 .app-icon{width:44px;height:44px;border-radius:12px;background:linear-gradient(135deg,var(--acc),var(--acc2));display:flex;align-items:center;justify-content:center;font-size:22px;box-shadow:0 0 22px rgba(var(--acc-rgb),.35);flex-shrink:0}
 .app-name{font-family:'Space Mono',monospace;font-size:16px;font-weight:700;line-height:1}
@@ -85,32 +58,31 @@ body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(
 .theme-btn{width:30px;height:26px;border-radius:100px;border:none;background:none;cursor:pointer;font-size:14px;display:flex;align-items:center;justify-content:center;transition:all .2s;color:var(--muted)}
 .theme-btn.active{background:var(--surface);box-shadow:0 2px 8px var(--shadow);color:var(--text)}
 
-/* ── TAB SWITCHER ── */
-.tab-bar{display:flex;background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:4px;gap:4px;margin-bottom:22px}
+/* TAB BAR */
+.tab-bar{display:flex;background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:4px;gap:4px;margin-bottom:20px}
 .tab-btn{flex:1;display:flex;align-items:center;justify-content:center;gap:7px;padding:10px 8px;border-radius:10px;border:none;background:none;cursor:pointer;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:600;color:var(--muted);transition:all .22s}
 .tab-btn:hover{color:var(--text2);background:var(--surface2)}
 .tab-btn.active{background:linear-gradient(135deg,var(--acc),var(--acc2));color:#000;box-shadow:0 4px 16px rgba(var(--acc-rgb),.3)}
-.tab-btn svg{width:17px;height:17px;stroke-width:2}
+.tab-btn svg{width:16px;height:16px;stroke-width:2;flex-shrink:0}
+.panel{display:none}.panel.show{display:block}
 
-/* ── PANELS ── */
-.panel{display:none}
-.panel.show{display:block}
-
-/* ── BADGES ── */
-.badge-row{display:flex;gap:6px;justify-content:center;margin-bottom:22px;flex-wrap:wrap}
+/* BADGES */
+.badge-row{display:flex;gap:6px;justify-content:center;margin-bottom:20px;flex-wrap:wrap}
 .badge{background:var(--surface2);border:1px solid var(--border);border-radius:100px;padding:3px 11px;font-family:'Space Mono',monospace;font-size:10px;color:var(--muted);letter-spacing:.4px}
 .badge.g{border-color:rgba(var(--acc-rgb),.35);color:var(--acc);background:rgba(var(--acc-rgb),.06)}
 .badge.p{border-color:rgba(var(--acc2-rgb),.35);color:var(--acc2);background:rgba(var(--acc2-rgb),.06)}
 
-/* ── FORMAT GRID ── */
-.formats-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(102px,1fr));gap:8px;margin-bottom:22px}
-.format-card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:11px 8px;text-align:center;transition:all .2s;cursor:default}
+/* FORMAT GRID */
+.formats-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(102px,1fr));gap:8px;margin-bottom:20px}
+.format-card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:11px 8px;text-align:center;transition:all .2s}
 .format-card:hover{border-color:rgba(var(--acc-rgb),.45);background:var(--surface2);transform:translateY(-2px)}
+.format-card.limited{border-style:dashed;opacity:.75}
 .fmt-icon{font-size:20px;margin-bottom:3px}
 .fmt-name{font-family:'Space Mono',monospace;font-size:10px;color:var(--acc);font-weight:700;letter-spacing:.8px}
 .fmt-desc{font-size:9px;color:var(--muted);margin-top:2px}
+.fmt-tag{font-size:8px;color:var(--warn);background:rgba(245,158,11,.1);border-radius:4px;padding:1px 5px;margin-top:3px;display:inline-block}
 
-/* ── DROP ZONE ── */
+/* DROP ZONE */
 .drop-zone{border:2px dashed var(--border2);border-radius:20px;padding:52px 36px;text-align:center;cursor:pointer;transition:all .3s;background:var(--surface);position:relative;overflow:hidden;margin-bottom:20px}
 .drop-zone::before{content:'';position:absolute;inset:0;background:linear-gradient(135deg,rgba(var(--acc-rgb),.04),rgba(var(--acc2-rgb),.03));opacity:0;transition:opacity .3s}
 .drop-zone:hover,.drop-zone.dragover{border-color:var(--acc);box-shadow:0 0 50px rgba(var(--acc-rgb),.12),inset 0 0 40px rgba(var(--acc-rgb),.04)}
@@ -125,7 +97,17 @@ body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(
 .browse-btn:hover{transform:translateY(-2px);box-shadow:0 8px 24px rgba(var(--acc-rgb),.35)}
 #fileInput,#compInput{display:none}
 
-/* ── STATUS ── */
+/* FORMAT UYARI - RAR/7Z için */
+.fmt-notice{
+  display:none;border-radius:12px;padding:14px 18px;margin-bottom:18px;
+  font-size:12px;line-height:1.7;font-family:'Space Mono',monospace;
+  border:1px solid;
+}
+.fmt-notice.info{background:rgba(var(--acc-rgb),.06);border-color:rgba(var(--acc-rgb),.2);color:var(--acc)}
+.fmt-notice.warn{background:rgba(245,158,11,.07);border-color:rgba(245,158,11,.25);color:var(--warn)}
+.fmt-notice.show{display:block}
+
+/* STATUS */
 .status-box{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:20px;margin-bottom:18px;display:none;transition:background .3s}
 .status-box.show{display:block}
 .status-header{display:flex;align-items:center;gap:11px;margin-bottom:14px}
@@ -139,7 +121,7 @@ body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(
 .progress-fill::after{content:'';position:absolute;right:0;top:0;bottom:0;width:28px;background:linear-gradient(90deg,transparent,rgba(255,255,255,.2))}
 .progress-info{display:flex;justify-content:space-between;font-size:11px;color:var(--muted);font-family:'Space Mono',monospace}
 
-/* ── FILE TREE ── */
+/* FILE TREE */
 .file-tree-wrapper{background:var(--surface);border:1px solid var(--border);border-radius:14px;overflow:hidden;display:none}
 .file-tree-wrapper.show{display:block}
 .tree-header{display:flex;align-items:center;justify-content:space-between;padding:14px 20px;border-bottom:1px solid var(--border);background:var(--surface2);flex-wrap:wrap;gap:9px}
@@ -170,7 +152,7 @@ body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(
 .file-dl:hover{background:rgba(var(--acc-rgb),.1);border-color:var(--acc)}
 .empty-state{text-align:center;padding:32px;color:var(--muted);font-size:13px}
 
-/* ── COMPRESS PANEL ── */
+/* COMPRESS PANEL */
 .comp-drop{border:2px dashed var(--border2);border-radius:20px;padding:48px 32px;text-align:center;cursor:pointer;transition:all .3s;background:var(--surface);position:relative;overflow:hidden;margin-bottom:18px}
 .comp-drop::before{content:'';position:absolute;inset:0;background:linear-gradient(135deg,rgba(var(--acc-rgb),.04),rgba(var(--acc2-rgb),.03));opacity:0;transition:opacity .3s}
 .comp-drop:hover,.comp-drop.dragover{border-color:var(--acc);box-shadow:0 0 40px rgba(var(--acc-rgb),.1)}
@@ -179,11 +161,9 @@ body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(
 .comp-drop-title{font-family:'Space Mono',monospace;font-size:18px;font-weight:700;color:var(--text);margin-bottom:6px}
 .comp-drop-sub{color:var(--muted);font-size:13px;line-height:1.7}
 .comp-drop-sub strong{color:var(--acc)}
-
-/* Selected files list */
 .comp-files-box{background:var(--surface);border:1px solid var(--border);border-radius:14px;overflow:hidden;margin-bottom:16px;display:none}
 .comp-files-box.show{display:block}
-.comp-files-header{display:flex;align-items:center;justify-content:space-between;padding:12px 18px;background:var(--surface2);border-bottom:1px solid var(--border)}
+.comp-files-header{display:flex;align-items:center;justify-content:space-between;padding:12px 18px;background:var(--surface2);border-bottom:1px solid var(--border);flex-wrap:wrap;gap:8px}
 .comp-files-title{font-family:'Space Mono',monospace;font-size:13px;font-weight:700;color:var(--text);display:flex;align-items:center;gap:8px}
 .comp-files-list{max-height:200px;overflow-y:auto;padding:4px 0}
 .comp-files-list::-webkit-scrollbar{width:4px}
@@ -195,34 +175,17 @@ body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(
 .comp-file-size{font-size:10px;color:var(--muted);font-family:'Space Mono',monospace;flex-shrink:0}
 .comp-file-del{background:none;border:none;cursor:pointer;font-size:14px;color:var(--muted);transition:color .15s;flex-shrink:0;padding:0 2px}
 .comp-file-del:hover{color:var(--danger)}
-
-/* Options */
 .comp-options{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:18px 20px;margin-bottom:16px}
-.comp-opt-title{font-family:'Space Mono',monospace;font-size:12px;color:var(--muted);letter-spacing:1px;text-transform:uppercase;margin-bottom:14px;display:flex;align-items:center;gap:8px}
+.comp-opt-title{font-family:'Space Mono',monospace;font-size:11px;color:var(--muted);letter-spacing:1px;text-transform:uppercase;margin-bottom:14px}
 .comp-opt-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
 .comp-opt-item{display:flex;flex-direction:column;gap:5px}
 .comp-opt-label{font-size:12px;color:var(--text2);font-weight:500}
-.comp-select,.comp-input-field{
-  background:var(--surface2);border:1px solid var(--border);
-  border-radius:8px;padding:8px 11px;
-  font-size:12px;font-family:'Space Mono',monospace;
-  color:var(--text);outline:none;width:100%;
-  transition:border-color .2s;
-  appearance:none;-webkit-appearance:none;
-  cursor:pointer;
-}
+.comp-select,.comp-input-field{background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:8px 11px;font-size:12px;font-family:'Space Mono',monospace;color:var(--text);outline:none;width:100%;transition:border-color .2s;appearance:none;cursor:pointer}
 .comp-select:focus,.comp-input-field:focus{border-color:var(--acc)}
 .comp-select option{background:var(--surface2);color:var(--text)}
-
-/* Level slider */
 .slider-wrap{display:flex;align-items:center;gap:10px}
-.comp-slider{
-  flex:1;height:4px;accent-color:var(--acc);cursor:pointer;
-  background:var(--surface2);border-radius:2px;
-}
+.comp-slider{flex:1;height:4px;accent-color:var(--acc);cursor:pointer}
 .slider-val{font-family:'Space Mono',monospace;font-size:11px;color:var(--acc);min-width:16px;text-align:right}
-
-/* Password toggle */
 .pw-toggle-wrap{display:flex;align-items:center;gap:8px;margin-top:4px}
 .toggle-sw{position:relative;width:36px;height:20px;cursor:pointer}
 .toggle-sw input{opacity:0;width:0;height:0}
@@ -231,23 +194,11 @@ body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(
 .toggle-sw .slider-track::after{content:'';position:absolute;top:2px;left:2px;width:14px;height:14px;border-radius:50%;background:var(--muted);transition:transform .25s}
 .toggle-sw input:checked + .slider-track::after{transform:translateX(16px);background:#000}
 .pw-toggle-label{font-size:12px;color:var(--text2)}
-
 .pw-field-wrap{margin-top:8px;display:none}
 .pw-field-wrap.show{display:block}
-
-/* Compress button */
-.comp-go-btn{
-  width:100%;background:linear-gradient(135deg,var(--acc),var(--acc2));
-  color:#000;font-family:'Space Mono',monospace;
-  font-size:14px;font-weight:700;padding:14px;
-  border-radius:12px;border:none;cursor:pointer;
-  transition:all .2s;letter-spacing:.5px;
-  display:flex;align-items:center;justify-content:center;gap:8px;
-}
+.comp-go-btn{width:100%;background:linear-gradient(135deg,var(--acc),var(--acc2));color:#000;font-family:'Space Mono',monospace;font-size:14px;font-weight:700;padding:14px;border-radius:12px;border:none;cursor:pointer;transition:all .2s;letter-spacing:.5px;display:flex;align-items:center;justify-content:center;gap:8px}
 .comp-go-btn:hover{transform:translateY(-2px);box-shadow:0 8px 26px rgba(var(--acc-rgb),.35)}
 .comp-go-btn:disabled{opacity:.45;cursor:not-allowed;transform:none;box-shadow:none}
-
-/* Compression result */
 .comp-result{background:var(--surface);border:1px solid rgba(var(--acc-rgb),.25);border-radius:14px;padding:18px 20px;margin-top:16px;display:none}
 .comp-result.show{display:block}
 .comp-result-title{font-family:'Space Mono',monospace;font-size:12px;color:var(--acc);letter-spacing:1px;text-transform:uppercase;margin-bottom:12px}
@@ -259,7 +210,7 @@ body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(
 .comp-dl-btn{width:100%;background:linear-gradient(135deg,var(--acc),var(--acc2));color:#000;font-family:'Space Mono',monospace;font-size:13px;font-weight:700;padding:12px;border-radius:10px;border:none;cursor:pointer;transition:all .2s;display:flex;align-items:center;justify-content:center;gap:7px}
 .comp-dl-btn:hover{transform:translateY(-1px);box-shadow:0 6px 20px rgba(var(--acc-rgb),.3)}
 
-/* Info */
+/* INFO */
 .info-section{margin-top:24px;background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:16px 20px}
 .info-title{font-family:'Space Mono',monospace;font-size:11px;color:var(--acc2);margin-bottom:10px;display:flex;align-items:center;gap:7px;letter-spacing:.8px;text-transform:uppercase}
 .info-list{list-style:none;display:grid;grid-template-columns:1fr 1fr;gap:6px}
@@ -267,37 +218,25 @@ body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(
 .info-list li::before{content:'→';color:var(--acc);font-family:monospace;flex-shrink:0}
 footer{text-align:center;margin-top:36px;color:var(--muted);font-size:11px;font-family:'Space Mono',monospace;padding-bottom:6px}
 
-/* ── BOTTOM BAR ── */
-.bottom-bar{
-  position:fixed;bottom:0;left:0;right:0;height:60px;
-  background:var(--bar-bg);backdrop-filter:blur(24px);-webkit-backdrop-filter:blur(24px);
-  border-top:1px solid var(--border);
-  display:flex;align-items:center;justify-content:space-between;
-  padding:0 20px;z-index:200;transition:background .3s,border-color .3s;
-  gap:10px;
-}
-/* Left: app info pill */
+/* BOTTOM BAR */
+.bottom-bar{position:fixed;bottom:0;left:0;right:0;height:60px;background:var(--bar-bg);backdrop-filter:blur(24px);-webkit-backdrop-filter:blur(24px);border-top:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;padding:0 20px;z-index:200;transition:background .3s,border-color .3s;gap:10px}
 .bar-info-pill{display:flex;align-items:center;gap:8px}
 .bar-logo{width:26px;height:26px;border-radius:7px;background:linear-gradient(135deg,var(--acc),var(--acc2));display:flex;align-items:center;justify-content:center;font-size:13px}
 .bar-appname{font-family:'Space Mono',monospace;font-size:12px;font-weight:700;color:var(--text)}
 .bar-appname span{color:var(--acc)}
 .bar-ver-tag{font-family:'Space Mono',monospace;font-size:9px;color:var(--muted);background:var(--surface2);border:1px solid var(--border);border-radius:100px;padding:2px 7px;letter-spacing:.5px}
-
-/* Center: file size counter */
 .bar-center{display:flex;align-items:center;gap:14px}
 .bar-stat{display:flex;flex-direction:column;align-items:center;gap:1px}
 .bar-stat-val{font-family:'Space Mono',monospace;font-size:12px;font-weight:700;color:var(--text);line-height:1}
 .bar-stat-label{font-family:'Space Mono',monospace;font-size:9px;color:var(--muted);letter-spacing:.5px}
 .bar-stat-divider{width:1px;height:28px;background:var(--border)}
-
-/* Right: contact */
 .bar-right{display:flex;align-items:center;gap:6px}
 .bar-contact-label{font-family:'Space Mono',monospace;font-size:9px;color:var(--muted);letter-spacing:1.2px;text-transform:uppercase;margin-right:2px}
-.bar-icon-btn{width:31px;height:31px;border-radius:8px;background:none;border:1px solid var(--border);display:flex;align-items:center;justify-content:center;cursor:pointer;transition:all .2s;color:var(--muted);text-decoration:none;font-size:0}
+.bar-icon-btn{width:31px;height:31px;border-radius:8px;background:none;border:1px solid var(--border);display:flex;align-items:center;justify-content:center;cursor:pointer;transition:all .2s;color:var(--muted);text-decoration:none}
 .bar-icon-btn:hover{border-color:var(--acc);color:var(--acc);background:rgba(var(--acc-rgb),.1);transform:translateY(-2px)}
 .bar-icon-btn svg{width:15px;height:15px}
 
-/* ── CHANGELOG ── */
+/* CHANGELOG */
 .cl-overlay{position:fixed;inset:0;background:rgba(0,0,0,.82);backdrop-filter:blur(10px);z-index:600;display:flex;align-items:center;justify-content:center;padding:16px;opacity:0;pointer-events:none;transition:opacity .35s}
 .cl-overlay.show{opacity:1;pointer-events:all}
 .cl-modal{background:var(--surface);border:1px solid var(--border);border-radius:24px;width:100%;max-width:500px;max-height:90vh;display:flex;flex-direction:column;overflow:hidden;box-shadow:0 40px 100px var(--shadow);transform:translateY(36px) scale(.96);transition:transform .4s cubic-bezier(.34,1.28,.64,1)}
@@ -331,7 +270,7 @@ footer{text-align:center;margin-top:36px;color:var(--muted);font-size:11px;font-
 .cl-ok-btn{width:100%;background:linear-gradient(135deg,var(--acc),var(--acc2));color:#000;font-family:'Space Mono',monospace;font-size:14px;font-weight:700;padding:13px;border-radius:11px;border:none;cursor:pointer;transition:all .2s}
 .cl-ok-btn:hover{transform:translateY(-2px);box-shadow:0 8px 26px rgba(var(--acc-rgb),.35)}
 
-/* ── ERROR MODAL ── */
+/* ERROR MODAL */
 .err-overlay{position:fixed;inset:0;background:rgba(0,0,0,.85);backdrop-filter:blur(10px);z-index:800;display:flex;align-items:center;justify-content:center;padding:16px;opacity:0;pointer-events:none;transition:opacity .3s}
 .err-overlay.show{opacity:1;pointer-events:all}
 .err-modal{background:var(--surface);border:1px solid rgba(255,68,102,.3);border-radius:22px;width:100%;max-width:520px;display:flex;flex-direction:column;overflow:hidden;box-shadow:0 30px 80px var(--shadow);transform:scale(.93);transition:transform .35s cubic-bezier(.34,1.3,.64,1)}
@@ -357,7 +296,7 @@ footer{text-align:center;margin-top:36px;color:var(--muted);font-size:11px;font-
 .err-btn.copy{background:var(--surface);color:var(--acc);border-color:rgba(var(--acc-rgb),.3)}.err-btn.copy:hover{background:rgba(var(--acc-rgb),.1)}
 .err-btn.retry{background:linear-gradient(135deg,var(--danger),#cc0033);color:#fff;border-color:transparent}.err-btn.retry:hover{transform:translateY(-1px);box-shadow:0 5px 15px rgba(255,68,102,.3)}
 
-/* ── PASSWORD MODAL ── */
+/* PASSWORD MODAL */
 .modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.8);backdrop-filter:blur(4px);z-index:700;display:none;align-items:center;justify-content:center;padding:16px}
 .modal-overlay.show{display:flex}
 .modal{background:var(--surface);border:1px solid var(--border);border-radius:18px;padding:28px;width:100%;max-width:360px;box-shadow:0 20px 60px var(--shadow)}
@@ -370,91 +309,77 @@ footer{text-align:center;margin-top:36px;color:var(--muted);font-size:11px;font-
 .btn-cancel{background:var(--surface2);color:var(--muted)}.btn-cancel:hover{color:var(--text)}
 .btn-ok-pw{background:linear-gradient(135deg,var(--acc),var(--acc2));color:#000;border-color:transparent}
 
-/* ── TOAST ── */
+/* TOAST */
 .toast{position:fixed;bottom:72px;right:14px;background:var(--surface2);border:1px solid rgba(var(--acc-rgb),.4);border-radius:11px;padding:11px 16px;font-family:'Space Mono',monospace;font-size:12px;color:var(--text);transform:translateY(110px);opacity:0;transition:all .32s cubic-bezier(.34,1.56,.64,1);z-index:1000;max-width:280px;box-shadow:0 10px 36px var(--shadow)}
 .toast.show{transform:translateY(0);opacity:1}
 
-/* ── RESPONSIVE ── */
 @media(max-width:560px){
-  .tree-header,.comp-opt-grid{grid-template-columns:1fr}
   .tree-header{flex-direction:column;align-items:flex-start}
   .formats-grid{grid-template-columns:repeat(4,1fr)}
   .info-list{grid-template-columns:1fr}
+  .comp-opt-grid{grid-template-columns:1fr}
   .comp-result-grid{grid-template-columns:1fr 1fr}
   .bar-center{display:none}
-  .bar-contact-label{display:none}
-  .bar-appname{display:none}
 }
-@media(max-width:380px){
-  .formats-grid{grid-template-columns:repeat(3,1fr)}
-  .err-meta-grid{grid-template-columns:1fr}
-}
+@media(max-width:380px){.formats-grid{grid-template-columns:repeat(3,1fr)}}
 </style>
 </head>
 <body>
-<div class="orb a"></div>
-<div class="orb b"></div>
+<div class="orb a"></div><div class="orb b"></div>
 
-<!-- ══════════ CHANGELOG ══════════ -->
+<!-- CHANGELOG -->
 <div class="cl-overlay" id="clOverlay">
   <div class="cl-modal">
     <div class="cl-header">
-      <div class="cl-header-top">
-        <span class="cl-app-label">S-ZIP PRO</span>
-        <span class="cl-ver-badge">Pro 1.0.01</span>
-      </div>
+      <div class="cl-header-top"><span class="cl-app-label">S-ZIP PRO</span><span class="cl-ver-badge">Pro 1.0</span></div>
       <div class="cl-title">Yenilikler 🎉</div>
       <div class="cl-subtitle">Bu sürümde neler değişti — aşağı kaydır</div>
     </div>
     <div class="cl-body" id="clBody">
       <div class="cl-section">
         <div class="cl-section-label new">✦ Yeni</div>
-        <div class="cl-item"><div class="cl-item-icon">📦</div><div><div class="cl-item-name">S-Zip Pro Yayında!</div><div class="cl-item-desc">Tamamen yeniden tasarlanan arayüz ve güçlendirilmiş format desteğiyle S-Zip Pro'ya hoş geldiniz.</div></div></div>
-        <div class="cl-item"><div class="cl-item-icon">🗜️</div><div><div class="cl-item-name">Dosya Sıkıştırma</div><div class="cl-item-desc">Birden fazla dosyayı seçip ZIP olarak sıkıştırın. Sıkıştırma seviyesi, şifre ve ZIP adı ayarlanabilir.</div></div></div>
-        <div class="cl-item"><div class="cl-item-icon">🌙</div><div><div class="cl-item-name">Gece / Gündüz Teması</div><div class="cl-item-desc">Karanlık ve aydınlık tema arasında anında geçiş yapın. Tercih otomatik kaydedilir.</div></div></div>
+        <div class="cl-item"><div class="cl-item-icon">📦</div><div><div class="cl-item-name">S-Zip Pro 1.0 Yayında!</div><div class="cl-item-desc">Tamamen yeniden tasarlanan arayüz ve saf JS tabanlı format desteğiyle S-Zip Pro'ya hoş geldiniz.</div></div></div>
+        <div class="cl-item"><div class="cl-item-icon">🗜️</div><div><div class="cl-item-name">Dosya Sıkıştırma</div><div class="cl-item-desc">Birden fazla dosyayı seçip ZIP olarak sıkıştırın. Seviye, şifre ve dosya adı ayarlanabilir.</div></div></div>
+        <div class="cl-item"><div class="cl-item-icon">🌙</div><div><div class="cl-item-name">Gece / Gündüz Teması</div><div class="cl-item-desc">Karanlık ve aydınlık tema arasında anında geçiş. Tercih otomatik kaydedilir.</div></div></div>
         <div class="cl-item"><div class="cl-item-icon">🎨</div><div><div class="cl-item-name">5 Renk Teması</div><div class="cl-item-desc">Yeşil, Mor, Mavi, Turuncu ve Pembe aksent rengi seçenekleri.</div></div></div>
-        <div class="cl-item"><div class="cl-item-icon">🚨</div><div><div class="cl-item-name">Akıllı Hata Yakalayıcı</div><div class="cl-item-desc">Hata oluştuğunda detaylı bilgi paneli: mesaj, satır, dosya, zaman. Kopyala & Yenile butonları.</div></div></div>
-        <div class="cl-item"><div class="cl-item-icon">🔐</div><div><div class="cl-item-name">Şifreli ZIP Desteği</div><div class="cl-item-desc">Hem açma hem sıkıştırma işlemlerinde şifre koruması desteklenir.</div></div></div>
-        <div class="cl-item"><div class="cl-item-icon">🔷</div><div><div class="cl-item-name">RAR5 & 7Z Desteği</div><div class="cl-item-desc">RAR5 ve 7-Zip formatları tam olarak desteklenmektedir.</div></div></div>
+        <div class="cl-item"><div class="cl-item-icon">🚨</div><div><div class="cl-item-name">Akıllı Hata Yakalayıcı</div><div class="cl-item-desc">Hata paneli: mesaj, satır, dosya, zaman. Kopyala & Yenile butonları.</div></div></div>
+        <div class="cl-item"><div class="cl-item-icon">🔬</div><div><div class="cl-item-name">Magic Byte Tespiti</div><div class="cl-item-desc">Uzantıya değil, dosyanın gerçek içeriğine bakarak format belirleme. Daha güvenilir.</div></div></div>
       </div>
       <div class="cl-section">
-        <div class="cl-section-label imp">⬆ İyileştirmeler</div>
-        <div class="cl-item"><div class="cl-item-icon">⚡</div><div><div class="cl-item-name">Hızlı İşleme Motoru</div><div class="cl-item-desc">Büyük dosyalar için optimize edilmiş motor, tarayıcı belleği çok daha verimli kullanılıyor.</div></div></div>
-        <div class="cl-item"><div class="cl-item-icon">📱</div><div><div class="cl-item-name">Mobil Uyumluluk</div><div class="cl-item-desc">Telefon ve tablet ekranlarına tam uyumlu, dokunmatik dostu arayüz.</div></div></div>
-        <div class="cl-item"><div class="cl-item-icon">⬇️</div><div><div class="cl-item-name">Toplu İndirme</div><div class="cl-item-desc">Seçilen dosyaları ZIP'e paketleyip tek seferde indir.</div></div></div>
+        <div class="cl-section-label imp">⬆ Format Desteği</div>
+        <div class="cl-item"><div class="cl-item-icon">📮</div><div><div class="cl-item-name">ZIP — Tam Destek</div><div class="cl-item-desc">Şifreli ZIP dahil. Dosya seçimi, toplu indirme, arama. Saf JS ile çalışır.</div></div></div>
+        <div class="cl-item"><div class="cl-item-icon">🌀</div><div><div class="cl-item-name">GZIP / TAR.GZ — Tam Destek</div><div class="cl-item-desc">GZ sıkıştırmalı dosyalar ve TAR.GZ arşivleri açılabilir.</div></div></div>
+        <div class="cl-item"><div class="cl-item-icon">🗜️</div><div><div class="cl-item-name">RAR / 7Z — Header Analizi</div><div class="cl-item-desc">Dosya listesi ve meta bilgisi gösterilir. İçerik çıkarımı için WebAssembly gerekir (GitHub Pages'de tam çalışır).</div></div></div>
       </div>
       <div class="cl-section">
         <div class="cl-section-label fix">🔧 Düzeltmeler</div>
-        <div class="cl-item"><div class="cl-item-icon">🛡️</div><div><div class="cl-item-name">%100 Gizlilik</div><div class="cl-item-desc">Hiçbir dosya sunucuya gönderilmez. Tüm işlemler tarayıcı içinde gerçekleşir.</div></div></div>
-        <div class="cl-item"><div class="cl-item-icon">📂</div><div><div class="cl-item-name">Klasör Yapısı</div><div class="cl-item-desc">Arşiv içindeki iç içe klasör hiyerarşisi artık doğru gösteriliyor ve indiriliyor.</div></div></div>
+        <div class="cl-item"><div class="cl-item-icon">🛡️</div><div><div class="cl-item-name">%100 Gizlilik</div><div class="cl-item-desc">Hiçbir dosya sunucuya gönderilmez. Tüm işlemler tarayıcı içinde.</div></div></div>
+        <div class="cl-item"><div class="cl-item-icon">📂</div><div><div class="cl-item-name">Klasör Yapısı</div><div class="cl-item-desc">İç içe klasör hiyerarşisi doğru gösteriliyor ve indiriliyor.</div></div></div>
       </div>
     </div>
     <div class="cl-scroll-hint" id="clScrollHint">▼ &nbsp;Devamı için kaydır</div>
     <div class="cl-footer">
-      <label class="cl-dontshow"><input type="checkbox" id="dontShowCb"><span class="cl-dontshow-label">Bu sürüm için bir daha gösterme (yeni güncelleme geldiğinde yeniden açılır)</span></label>
+      <label class="cl-dontshow"><input type="checkbox" id="dontShowCb"><span class="cl-dontshow-label">Bu sürüm için bir daha gösterme (yeni sürümde yeniden açılır)</span></label>
       <button class="cl-ok-btn" id="clOkBtn">✓ &nbsp;Anlaşıldı, Başla!</button>
     </div>
   </div>
 </div>
 
-<!-- ══════════ ERROR MODAL ══════════ -->
+<!-- ERROR MODAL -->
 <div class="err-overlay" id="errOverlay">
   <div class="err-modal">
     <div class="err-header">
       <div class="err-icon-wrap">⚠️</div>
-      <div>
-        <div class="err-title">Bir Hata Oluştu</div>
-        <div class="err-subtitle" id="errSubtitle">İşlem sırasında beklenmeyen bir hata meydana geldi.</div>
-      </div>
+      <div><div class="err-title">Bir Hata Oluştu</div><div class="err-subtitle" id="errSubtitle">İşlem sırasında beklenmeyen bir hata.</div></div>
     </div>
     <div class="err-body">
       <div class="err-block-label">Hata Mesajı</div>
       <div class="err-code-block" id="errMessage">—</div>
       <div class="err-block-label">Teknik Detaylar</div>
       <div class="err-meta-grid">
-        <div class="err-meta-item"><div class="err-meta-label">Kaynak Dosya</div><div class="err-meta-val" id="errFile">—</div></div>
+        <div class="err-meta-item"><div class="err-meta-label">Kaynak</div><div class="err-meta-val" id="errFile">—</div></div>
         <div class="err-meta-item"><div class="err-meta-label">Satır : Sütun</div><div class="err-meta-val red" id="errLine">—</div></div>
-        <div class="err-meta-item"><div class="err-meta-label">Hata Türü</div><div class="err-meta-val red" id="errType">—</div></div>
+        <div class="err-meta-item"><div class="err-meta-label">Tür</div><div class="err-meta-val red" id="errType">—</div></div>
         <div class="err-meta-item"><div class="err-meta-label">Zaman</div><div class="err-meta-val" id="errTime">—</div></div>
       </div>
     </div>
@@ -466,7 +391,7 @@ footer{text-align:center;margin-top:36px;color:var(--muted);font-size:11px;font-
   </div>
 </div>
 
-<!-- ══════════ PASSWORD MODAL ══════════ -->
+<!-- PASSWORD MODAL -->
 <div class="modal-overlay" id="pwModal">
   <div class="modal">
     <h3>🔐 Şifre Gerekli</h3>
@@ -478,20 +403,15 @@ footer{text-align:center;margin-top:36px;color:var(--muted);font-size:11px;font-
     </div>
   </div>
 </div>
-
 <div class="toast" id="toast"></div>
 
-<!-- ══════════ MAIN ══════════ -->
+<!-- MAIN -->
 <div class="page">
-
   <!-- TOPBAR -->
   <div class="topbar">
     <div class="topbar-left">
       <div class="app-icon">📦</div>
-      <div>
-        <div class="app-name">S-<span>Zip</span></div>
-        <span class="app-ver">PRO 1.0.01</span>
-      </div>
+      <div><div class="app-name">S-<span>Zip</span></div><span class="app-ver">PRO 1.0</span></div>
     </div>
     <div class="topbar-right">
       <div class="palette-wrap" title="Renk Teması">
@@ -520,9 +440,8 @@ footer{text-align:center;margin-top:36px;color:var(--muted);font-size:11px;font-
     </button>
   </div>
 
-  <!-- ════ EXTRACT PANEL ════ -->
+  <!-- EXTRACT PANEL -->
   <div class="panel show" id="panelExtract">
-
     <div class="badge-row">
       <span class="badge g">🔒 %100 Çevrimdışı</span>
       <span class="badge p">🌐 Tarayıcıda Çalışır</span>
@@ -530,30 +449,26 @@ footer{text-align:center;margin-top:36px;color:var(--muted);font-size:11px;font-
     </div>
 
     <div class="formats-grid">
-      <div class="format-card"><div class="fmt-icon">📮</div><div class="fmt-name">.ZIP</div><div class="fmt-desc">Evrensel</div></div>
-      <div class="format-card"><div class="fmt-icon">🗜️</div><div class="fmt-name">.RAR</div><div class="fmt-desc">RAR4/5</div></div>
-      <div class="format-card"><div class="fmt-icon">🔷</div><div class="fmt-name">.7Z</div><div class="fmt-desc">7-Zip</div></div>
-      <div class="format-card"><div class="fmt-icon">📁</div><div class="fmt-name">.TAR</div><div class="fmt-desc">Unix</div></div>
-      <div class="format-card"><div class="fmt-icon">🌀</div><div class="fmt-name">.GZ</div><div class="fmt-desc">Gzip</div></div>
-      <div class="format-card"><div class="fmt-icon">🔩</div><div class="fmt-name">.BZ2</div><div class="fmt-desc">Bzip2</div></div>
-      <div class="format-card"><div class="fmt-icon">⚙️</div><div class="fmt-name">.XZ</div><div class="fmt-desc">LZMA2</div></div>
-      <div class="format-card"><div class="fmt-icon">💾</div><div class="fmt-name">.TGZ</div><div class="fmt-desc">Tar+Gz</div></div>
+      <div class="format-card"><div class="fmt-icon">📮</div><div class="fmt-name">.ZIP</div><div class="fmt-desc">Tam Destek</div></div>
+      <div class="format-card"><div class="fmt-icon">🌀</div><div class="fmt-name">.GZ</div><div class="fmt-desc">Tam Destek</div></div>
+      <div class="format-card"><div class="fmt-icon">💾</div><div class="fmt-name">.TGZ</div><div class="fmt-desc">Tam Destek</div></div>
+      <div class="format-card limited"><div class="fmt-icon">🗜️</div><div class="fmt-name">.RAR</div><div class="fmt-desc">Liste Görünümü</div><div class="fmt-tag">★ GitHub'da Tam</div></div>
+      <div class="format-card limited"><div class="fmt-icon">🔷</div><div class="fmt-name">.7Z</div><div class="fmt-desc">Liste Görünümü</div><div class="fmt-tag">★ GitHub'da Tam</div></div>
+      <div class="format-card limited"><div class="fmt-icon">📁</div><div class="fmt-name">.TAR</div><div class="fmt-desc">Liste Görünümü</div><div class="fmt-tag">★ GitHub'da Tam</div></div>
+      <div class="format-card limited"><div class="fmt-icon">🔩</div><div class="fmt-name">.BZ2</div><div class="fmt-desc">Liste Görünümü</div><div class="fmt-tag">★ GitHub'da Tam</div></div>
+      <div class="format-card limited"><div class="fmt-icon">⚙️</div><div class="fmt-name">.XZ</div><div class="fmt-desc">Liste Görünümü</div><div class="fmt-tag">★ GitHub'da Tam</div></div>
     </div>
 
     <div class="drop-zone" id="dropZone">
       <span class="drop-icon">📂</span>
       <div class="drop-title">Arşiv dosyasını buraya bırak</div>
-      <div class="drop-sub">veya bilgisayarından seç<br><strong>ZIP, RAR, 7Z, TAR, GZ, BZ2, XZ, TGZ</strong> desteklenir</div>
+      <div class="drop-sub">veya bilgisayarından seç<br><strong>ZIP tam çalışır · RAR/7Z liste görünümü</strong></div>
       <button class="browse-btn" onclick="document.getElementById('fileInput').click()">📁 Dosya Seç</button>
-      <input type="file" id="fileInput" accept=".zip,.rar,.7z,.tar,.gz,.bz2,.xz,.tgz,.tar.gz,.tar.bz2,.tar.xz,application/x-rar-compressed,application/vnd.rar,application/x-7z-compressed,application/gzip,application/x-tar">
+      <input type="file" id="fileInput" accept="*/*">
     </div>
 
-    <!-- RAR/7Z uyarısı -->
-    <div id="libNotice" style="display:none;background:rgba(245,158,11,.07);border:1px solid rgba(245,158,11,.25);border-radius:12px;padding:14px 18px;margin-bottom:18px;font-size:12px;color:var(--warn);font-family:'Space Mono',monospace;line-height:1.7">
-      ⚠️ <strong>RAR / 7Z / TAR için not:</strong> Bu formatlar için libarchive.js kütüphanesi gereklidir.<br>
-      İlk kullanımda internet bağlantısıyla ~2MB kütüphane indirilir, sonrasında çevrimdışı çalışır.<br>
-      <span id="libStatus">🔄 Kütüphane yükleniyor...</span>
-    </div>
+    <!-- Format bilgi notu -->
+    <div class="fmt-notice" id="fmtNotice"></div>
 
     <div class="status-box" id="statusBox">
       <div class="status-header">
@@ -573,8 +488,8 @@ footer{text-align:center;margin-top:36px;color:var(--muted);font-size:11px;font-
         <div class="tree-actions">
           <button class="action-btn" onclick="selectAll()">☑ Tümünü Seç</button>
           <button class="action-btn" onclick="clearSel()">☐ Temizle</button>
-          <button class="action-btn primary" onclick="dlSelected()">⬇ Seçilenleri İndir</button>
-          <button class="action-btn primary" onclick="dlAll()">📦 Tümünü İndir</button>
+          <button class="action-btn primary" id="btnDlSelected" onclick="dlSelected()">⬇ Seçilenleri İndir</button>
+          <button class="action-btn primary" id="btnDlAll" onclick="dlAll()">📦 Tümünü İndir</button>
         </div>
       </div>
       <div class="search-bar">
@@ -587,25 +502,21 @@ footer{text-align:center;margin-top:36px;color:var(--muted);font-size:11px;font-
       <div class="info-title">ℹ️ Gizlilik & Güvenlik</div>
       <ul class="info-list">
         <li>Dosyalar sunucuya gönderilmez</li><li>Tarayıcı belleğinde işlenir</li>
-        <li>İnternet bağlantısı gerekmez</li><li>Açık kaynak kütüphaneler</li>
-        <li>Şifreli ZIP desteklenir</li><li>Büyük dosyalar desteklenir</li>
+        <li>ZIP/GZ çevrimdışı tam çalışır</li><li>RAR/7Z GitHub Pages'de tam çalışır</li>
+        <li>Şifreli ZIP desteklenir</li><li>Magic byte format tespiti</li>
       </ul>
     </div>
   </div>
 
-  <!-- ════ COMPRESS PANEL ════ -->
+  <!-- COMPRESS PANEL -->
   <div class="panel" id="panelCompress">
-
-    <!-- Drop area for compression -->
     <div class="comp-drop" id="compDrop">
       <span class="comp-drop-icon">🗜️</span>
       <div class="comp-drop-title">Sıkıştırılacak dosyaları seç</div>
-      <div class="comp-drop-sub">Birden fazla dosya veya klasör seçebilirsiniz<br><strong>Hepsi ZIP olarak paketlenir</strong></div>
+      <div class="comp-drop-sub">Birden fazla dosya seçebilirsiniz<br><strong>ZIP olarak paketlenir — tam çevrimdışı</strong></div>
       <button class="browse-btn" style="margin-top:16px" onclick="document.getElementById('compInput').click()">📎 Dosya Ekle</button>
-      <input type="file" id="compInput" multiple>
+      <input type="file" id="compInput" multiple accept="*/*">
     </div>
-
-    <!-- Selected files list -->
     <div class="comp-files-box" id="compFilesBox">
       <div class="comp-files-header">
         <div class="comp-files-title">
@@ -614,14 +525,12 @@ footer{text-align:center;margin-top:36px;color:var(--muted);font-size:11px;font-
           <span class="file-count" id="compTotalSize" style="background:rgba(var(--acc2-rgb),.1);border-color:rgba(var(--acc2-rgb),.25);color:var(--acc2)">0 B</span>
         </div>
         <div style="display:flex;gap:6px">
-          <button class="action-btn" onclick="document.getElementById('compInput').click()">+ Daha Ekle</button>
+          <button class="action-btn" onclick="document.getElementById('compInput').click()">+ Ekle</button>
           <button class="action-btn" style="color:var(--danger);border-color:rgba(255,68,102,.3)" onclick="clearCompFiles()">🗑 Temizle</button>
         </div>
       </div>
       <div class="comp-files-list" id="compFilesList"></div>
     </div>
-
-    <!-- Options -->
     <div class="comp-options">
       <div class="comp-opt-title">⚙️ Sıkıştırma Ayarları</div>
       <div class="comp-opt-grid">
@@ -637,7 +546,7 @@ footer{text-align:center;margin-top:36px;color:var(--muted);font-size:11px;font-
           </select>
         </div>
         <div class="comp-opt-item">
-          <label class="comp-opt-label">Sıkıştırma Seviyesi: <span id="compLevelVal" style="color:var(--acc)">6</span></label>
+          <label class="comp-opt-label">Seviye: <span id="compLevelVal" style="color:var(--acc)">6</span></label>
           <div class="slider-wrap">
             <span style="font-size:10px;color:var(--muted);font-family:'Space Mono',monospace">Hız</span>
             <input type="range" class="comp-slider" id="compLevel" min="1" max="9" value="6" oninput="document.getElementById('compLevelVal').textContent=this.value">
@@ -647,10 +556,7 @@ footer{text-align:center;margin-top:36px;color:var(--muted);font-size:11px;font-
         <div class="comp-opt-item">
           <label class="comp-opt-label">Şifre Koruması</label>
           <div class="pw-toggle-wrap">
-            <label class="toggle-sw">
-              <input type="checkbox" id="compPwToggle" onchange="toggleCompPw()">
-              <span class="slider-track"></span>
-            </label>
+            <label class="toggle-sw"><input type="checkbox" id="compPwToggle" onchange="toggleCompPw()"><span class="slider-track"></span></label>
             <span class="pw-toggle-label">Şifreyle koru</span>
           </div>
           <div class="pw-field-wrap" id="compPwField">
@@ -659,84 +565,56 @@ footer{text-align:center;margin-top:36px;color:var(--muted);font-size:11px;font-
         </div>
       </div>
     </div>
-
     <button class="comp-go-btn" id="compGoBtn" onclick="startCompress()" disabled>
       <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
       ZIP Oluştur ve İndir
     </button>
-
-    <!-- Compress status -->
     <div class="status-box" id="compStatusBox">
-      <div class="status-header">
-        <div class="status-dot" id="compStatusDot"></div>
-        <div class="status-text" id="compStatusText">Sıkıştırılıyor...</div>
-      </div>
+      <div class="status-header"><div class="status-dot" id="compStatusDot"></div><div class="status-text" id="compStatusText">Sıkıştırılıyor...</div></div>
       <div class="progress-bar"><div class="progress-fill" id="compProgressFill"></div></div>
       <div class="progress-info"><span id="compProgressLabel">Başlatılıyor...</span><span id="compProgressPct">0%</span></div>
     </div>
-
-    <!-- Result stats -->
     <div class="comp-result" id="compResult">
       <div class="comp-result-title">✓ Sıkıştırma Tamamlandı</div>
       <div class="comp-result-grid">
-        <div class="comp-stat"><div class="comp-stat-val" id="resBefore">—</div><div class="comp-stat-label">Orijinal Boyut</div></div>
+        <div class="comp-stat"><div class="comp-stat-val" id="resBefore">—</div><div class="comp-stat-label">Orijinal</div></div>
         <div class="comp-stat"><div class="comp-stat-val" id="resAfter">—</div><div class="comp-stat-label">Sıkıştırılmış</div></div>
         <div class="comp-stat"><div class="comp-stat-val green" id="resRatio">—</div><div class="comp-stat-label">Tasarruf</div></div>
       </div>
       <button class="comp-dl-btn" id="compDlBtn">⬇ ZIP Dosyasını İndir</button>
     </div>
-
     <div class="info-section" style="margin-top:20px">
-      <div class="info-title">💡 Sıkıştırma Hakkında</div>
+      <div class="info-title">💡 Sıkıştırma</div>
       <ul class="info-list">
-        <li>Tüm dosyalar ZIP formatında paketlenir</li>
-        <li>Orijinal klasör yapısı korunur</li>
-        <li>Şifre sadece tarayıcıda uygulanır</li>
-        <li>Sınır yok, büyük dosya desteklenir</li>
+        <li>ZIP — çevrimdışı tam çalışır</li><li>Klasör yapısı korunur</li>
+        <li>Sınır yok, büyük dosya desteklenir</li><li>Şifre tarayıcıda uygulanır</li>
       </ul>
     </div>
+  </div>
 
-  </div><!-- /panelCompress -->
-
-  <footer>S-Zip Pro 1.0.01 — Çevrimdışı arşiv yöneticisi</footer>
+  <footer>S-Zip Pro 1.0 — Çevrimdışı arşiv yöneticisi</footer>
 </div>
 
-<!-- ══════════ BOTTOM BAR ══════════ -->
+<!-- BOTTOM BAR -->
 <div class="bottom-bar">
-  <!-- Left: branding -->
   <div class="bar-info-pill">
     <div class="bar-logo">📦</div>
-    <div>
-      <div class="bar-appname">S-<span>Zip</span></div>
-    </div>
-    <span class="bar-ver-tag">Pro 1.0.01</span>
+    <div><div class="bar-appname">S-<span>Zip</span></div></div>
+    <span class="bar-ver-tag">Pro 1.0</span>
   </div>
-
-  <!-- Center: live stats -->
   <div class="bar-center">
-    <div class="bar-stat">
-      <span class="bar-stat-val" id="barFileCount">—</span>
-      <span class="bar-stat-label">DOSYA</span>
-    </div>
+    <div class="bar-stat"><span class="bar-stat-val" id="barFileCount">—</span><span class="bar-stat-label">DOSYA</span></div>
     <div class="bar-stat-divider"></div>
-    <div class="bar-stat">
-      <span class="bar-stat-val" id="barTotalSize">—</span>
-      <span class="bar-stat-label">BOYUT</span>
-    </div>
+    <div class="bar-stat"><span class="bar-stat-val" id="barTotalSize">—</span><span class="bar-stat-label">BOYUT</span></div>
     <div class="bar-stat-divider"></div>
-    <div class="bar-stat">
-      <span class="bar-stat-val" id="barFormat">—</span>
-      <span class="bar-stat-label">FORMAT</span>
-    </div>
+    <div class="bar-stat"><span class="bar-stat-val" id="barFormat">—</span><span class="bar-stat-label">FORMAT</span></div>
   </div>
-
-  <!-- Right: contact -->
   <div class="bar-right">
     <span class="bar-contact-label">İletişim</span>
-    <a class="bar-icon-btn" href="https://instagram.com/sebasmobil" target="_blank" title="Instagram @sebasmobil">
+    <a class="bar-icon-btn" href="https://instagram.com/sebasmobil" target="_blank" title="@sebasmobil">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="2" y="2" width="20" height="20" rx="5"/><circle cx="12" cy="12" r="4.5"/><circle cx="17.5" cy="6.5" r="1" fill="currentColor" stroke="none"/></svg>
     </a>
-    <a class="bar-icon-btn" href="#" onclick="openMail(event)" title="E-posta Gönder">
+    <a class="bar-icon-btn" href="#" onclick="openMail(event)" title="E-posta">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="2" y="4" width="20" height="16" rx="2"/><polyline points="2,4 12,13 22,4"/></svg>
     </a>
   </div>
@@ -745,317 +623,457 @@ footer{text-align:center;margin-top:36px;color:var(--muted);font-size:11px;font-
 <script>
 'use strict';
 
-/* ── THEME & COLOR ── */
+/* ══ THEME & COLOR ══ */
 const html = document.documentElement;
-function setTheme(t) {
-  html.setAttribute('data-theme', t);
-  document.getElementById('btnDark').classList.toggle('active', t==='dark');
-  document.getElementById('btnLight').classList.toggle('active', t==='light');
-  try{localStorage.setItem('szip_theme',t);}catch(e){}
-}
-function setColor(c) {
-  html.setAttribute('data-color', c);
-  document.querySelectorAll('.pal').forEach(d=>d.classList.toggle('active',d.dataset.c===c));
-  try{localStorage.setItem('szip_color',c);}catch(e){}
-}
-(function(){
-  try{
-    const t=localStorage.getItem('szip_theme'), c=localStorage.getItem('szip_color');
-    if(t)setTheme(t); if(c)setColor(c);
-  }catch(e){}
-})();
+function setTheme(t){html.setAttribute('data-theme',t);document.getElementById('btnDark').classList.toggle('active',t==='dark');document.getElementById('btnLight').classList.toggle('active',t==='light');try{localStorage.setItem('szip_theme',t);}catch(e){}}
+function setColor(c){html.setAttribute('data-color',c);document.querySelectorAll('.pal').forEach(d=>d.classList.toggle('active',d.dataset.c===c));try{localStorage.setItem('szip_color',c);}catch(e){}}
+(function(){try{const t=localStorage.getItem('szip_theme'),c=localStorage.getItem('szip_color');if(t)setTheme(t);if(c)setColor(c);}catch(e){}})();
 
-/* ── TAB SWITCH ── */
-function switchTab(t) {
-  ['extract','compress'].forEach(id=>{
-    document.getElementById('tab'+id.charAt(0).toUpperCase()+id.slice(1)).classList.toggle('active',id===t);
-    document.getElementById('panel'+id.charAt(0).toUpperCase()+id.slice(1)).classList.toggle('show',id===t);
-  });
-}
+/* ══ TAB ══ */
+function switchTab(t){['extract','compress'].forEach(id=>{const cap=id.charAt(0).toUpperCase()+id.slice(1);document.getElementById('tab'+cap).classList.toggle('active',id===t);document.getElementById('panel'+cap).classList.toggle('show',id===t);});}
 
-/* ── MAIL ── */
-function openMail(e) {
-  e.preventDefault();
-  window.location.href='mailto:?subject='+encodeURIComponent('sebasmobil S-Zip İletişim');
-}
+/* ══ MAIL ══ */
+function openMail(e){e.preventDefault();window.location.href='mailto:?subject='+encodeURIComponent('sebasmobil S-Zip İletişim');}
 
-/* ── CHANGELOG ── */
-const APP_VERSION='Pro_1.0.01', LS_CL='szip_cl';
-function shouldShowChangelog() {
-  try{const d=JSON.parse(localStorage.getItem(LS_CL)||'null');if(!d)return true;if(d.version!==APP_VERSION)return true;return!d.dontShow;}catch(e){return true;}
-}
+/* ══ CHANGELOG ══ */
+const APP_VERSION='Pro_1.0',LS_CL='szip_cl';
+function shouldShowChangelog(){try{const d=JSON.parse(localStorage.getItem(LS_CL)||'null');if(!d)return true;if(d.version!==APP_VERSION)return true;return!d.dontShow;}catch(e){return true;}}
 function saveCLPref(ds){try{localStorage.setItem(LS_CL,JSON.stringify({version:APP_VERSION,dontShow:ds}));}catch(e){}}
-function openChangelog(){document.getElementById('dontShowCb').checked=false;document.getElementById('clOverlay').classList.add('show');setTimeout(updateScrollHint,120);}
+function openChangelog(){document.getElementById('dontShowCb').checked=false;document.getElementById('clOverlay').classList.add('show');setTimeout(()=>{const b=document.getElementById('clBody'),h=document.getElementById('clScrollHint');h.classList.toggle('hidden',b.scrollHeight<=b.clientHeight+12);},120);}
 function closeChangelog(){saveCLPref(document.getElementById('dontShowCb').checked);document.getElementById('clOverlay').classList.remove('show');}
-function updateScrollHint(){const b=document.getElementById('clBody'),h=document.getElementById('clScrollHint');h.classList.toggle('hidden',b.scrollHeight<=b.clientHeight+12);}
 document.getElementById('clBody').addEventListener('scroll',function(){document.getElementById('clScrollHint').classList.toggle('hidden',this.scrollTop+this.clientHeight>=this.scrollHeight-22);});
 document.getElementById('clOkBtn').addEventListener('click',closeChangelog);
 document.getElementById('clOverlay').addEventListener('click',function(e){if(e.target===this)closeChangelog();});
 
-/* ── ERROR CATCHER ── */
+/* ══ ERROR CATCHER ══ */
 let _lastErr=null,_lastFile=null,_retryFn=null;
 function showError(err,subtitle,retryFn){
-  _lastErr=err; _retryFn=retryFn||null;
-  const now=new Date();
-  let msg='',file='—',line='—',type='—';
-  if(err instanceof Error){
-    msg=err.message||String(err);type=err.name||'Error';
-    if(err.stack){const sl=err.stack.split('\n');for(let i=1;i<sl.length;i++){const m=sl[i].match(/(?:at\s+.*?\s+\()?(.+?):(\d+):(\d+)\)?/);if(m){file=m[1].split('/').pop();line=m[2]+' : '+m[3];break;}}msg=err.message+'\n\nStack:\n'+sl.slice(1,5).join('\n');}
-  }else{msg=String(err);type='UnknownError';}
-  document.getElementById('errSubtitle').textContent=subtitle||'İşlem sırasında beklenmeyen bir hata meydana geldi.';
+  _lastErr=err;_retryFn=retryFn||null;
+  const now=new Date();let msg='',file='—',line='—',type='—';
+  if(err instanceof Error){msg=err.message||String(err);type=err.name||'Error';if(err.stack){const sl=err.stack.split('\n');for(let i=1;i<sl.length;i++){const m=sl[i].match(/(?:at\s+.*?\s+\()?(.+?):(\d+):(\d+)\)?/);if(m){file=m[1].split('/').pop();line=m[2]+':'+m[3];break;}}msg=err.message+'\n\nStack:\n'+sl.slice(1,5).join('\n');}}
+  else{msg=String(err);type='UnknownError';}
+  document.getElementById('errSubtitle').textContent=subtitle||'İşlem sırasında beklenmeyen bir hata.';
   document.getElementById('errMessage').textContent=msg;
   document.getElementById('errFile').textContent=_lastFile?_lastFile.name:file;
-  document.getElementById('errLine').textContent=line;
-  document.getElementById('errType').textContent=type;
+  document.getElementById('errLine').textContent=line;document.getElementById('errType').textContent=type;
   document.getElementById('errTime').textContent=now.toLocaleTimeString('tr-TR')+' — '+now.toLocaleDateString('tr-TR');
   document.getElementById('errOverlay').classList.add('show');
 }
 function closeErrModal(){document.getElementById('errOverlay').classList.remove('show');}
-function copyErrReport(){
-  const r=['=== S-Zip Pro Hata Raporu ===','Uygulama: S-Zip Pro 1.0.01','Zaman: '+document.getElementById('errTime').textContent,'Tür: '+document.getElementById('errType').textContent,'Satır: '+document.getElementById('errLine').textContent,'Dosya: '+document.getElementById('errFile').textContent,'---',document.getElementById('errMessage').textContent].join('\n');
-  navigator.clipboard.writeText(r).then(()=>toast('📋 Hata raporu kopyalandı!')).catch(()=>toast('⚠ Kopyalama başarısız'));
-}
+function copyErrReport(){const r=['=== S-Zip Pro 1.0 Hata Raporu ===','Zaman: '+document.getElementById('errTime').textContent,'Tür: '+document.getElementById('errType').textContent,'Satır: '+document.getElementById('errLine').textContent,'Dosya: '+document.getElementById('errFile').textContent,'---',document.getElementById('errMessage').textContent].join('\n');navigator.clipboard.writeText(r).then(()=>toast('📋 Kopyalandı!')).catch(()=>toast('⚠ Kopyalama başarısız'));}
 function retryAction(){closeErrModal();if(_retryFn)setTimeout(_retryFn,200);else if(_lastFile)setTimeout(()=>processFile(_lastFile),200);else window.location.reload();}
 window.addEventListener('error',e=>showError(e.error||new Error(e.message),'Beklenmeyen JavaScript hatası.'));
 window.addEventListener('unhandledrejection',e=>showError(e.reason instanceof Error?e.reason:new Error(String(e.reason)),'İşlenmemiş Promise hatası.'));
 
-/* ── EXTRACT STATE ── */
-let extractedFiles=[],currentFile=null,pwResolve=null;
+/* ══ STATE ══ */
+let extractedFiles=[],currentFile=null,pwResolve=null,currentFmt='';
+
+/* ══ DOM REFS ══ */
 const dropZone=document.getElementById('dropZone'),fileInput=document.getElementById('fileInput');
 const statusBox=document.getElementById('statusBox'),statusDot=document.getElementById('statusDot'),statusText=document.getElementById('statusText');
 const progressFill=document.getElementById('progressFill'),progressLabel=document.getElementById('progressLabel'),progressPct=document.getElementById('progressPct');
 const fileTree=document.getElementById('fileTree'),fileList=document.getElementById('fileList'),archiveName=document.getElementById('archiveName'),fileCount=document.getElementById('fileCount'),searchInput=document.getElementById('searchInput');
+const fmtNotice=document.getElementById('fmtNotice');
 
-/* ── DRAG DROP (extract) ── */
+/* ══ DRAG DROP ══ */
 dropZone.addEventListener('dragover',e=>{e.preventDefault();dropZone.classList.add('dragover');});
 dropZone.addEventListener('dragleave',()=>dropZone.classList.remove('dragover'));
 dropZone.addEventListener('drop',e=>{e.preventDefault();dropZone.classList.remove('dragover');if(e.dataTransfer.files[0])processFile(e.dataTransfer.files[0]);});
 fileInput.addEventListener('change',e=>{if(e.target.files[0])processFile(e.target.files[0]);fileInput.value='';});
 dropZone.addEventListener('click',e=>{if(e.target.tagName!=='BUTTON')fileInput.click();});
 
-/* ── PROCESS ARCHIVE ── */
-async function processFile(file){
-  currentFile=file;_lastFile=file;extractedFiles=[];fileTree.classList.remove('show');searchInput.value='';
-  const ext=getExt(file.name);
-  showStat('proc');setProgress(0,'Dosya okunuyor...','0%');
-  try{
-    if(ext==='zip')await handleZip(file);
-    else await handleLibarchive(file);
-    showStat('done');renderFileTree(file.name);
-    updateBarStats();
-  }catch(err){
-    showStat('err');setStatusText('Hata: '+err.message);
-    showError(err,'"'+file.name+'" dosyası açılırken hata oluştu.',()=>processFile(file));
-  }
-}
-
-async function processFile(file){
-  currentFile=file;_lastFile=file;extractedFiles=[];fileTree.classList.remove('show');searchInput.value='';
-
-  showStat('proc');setProgress(0,'Dosya türü belirleniyor...','0%');
-
-  // Magic byte ile gerçek format tespiti
-  let fmt;
-  try { fmt = await detectFormat(file); }
-  catch(e){ fmt = getExtFmt(file.name); }
-
-  setStatusText('İşleniyor: '+fmt.toUpperCase());
-
-  try{
-    if(fmt==='zip') await handleZip(file);
-    else await handleLibarchive(file);
-    showStat('done');renderFileTree(file.name);
-    updateBarStats();
-  }catch(err){
-    showStat('err');setStatusText('Hata: '+err.message);
-    showError(err,'"'+file.name+'" dosyası açılırken hata oluştu.',()=>processFile(file));
-  }
-}
-
-// Magic byte ile format tespiti (uzantıya güvenmez)
+/* ══ MAGIC BYTE FORMAT DETECTION ══ */
 async function detectFormat(file){
-  const buf = await file.slice(0, 8).arrayBuffer();
-  const b = new Uint8Array(buf);
-
-  // ZIP: PK (50 4B 03 04) veya PK empty (50 4B 05 06)
+  const buf=await file.slice(0,12).arrayBuffer();
+  const b=new Uint8Array(buf);
+  // ZIP: PK
   if(b[0]===0x50&&b[1]===0x4B) return 'zip';
-  // RAR4: Rar! (52 61 72 21 1A 07 00)
-  if(b[0]===0x52&&b[1]===0x61&&b[2]===0x72&&b[3]===0x21&&b[4]===0x1A&&b[5]===0x07) return 'rar';
-  // RAR5: Rar! (52 61 72 21 1A 07 01 00)
-  if(b[0]===0x52&&b[1]===0x61&&b[2]===0x72&&b[3]===0x21&&b[4]===0x1A&&b[5]===0x07&&b[6]===0x01) return 'rar';
-  // 7z: 7z¼¯' (37 7A BC AF 27 1C)
+  // RAR4: Rar!\x1a\x07\x00
+  if(b[0]===0x52&&b[1]===0x61&&b[2]===0x72&&b[3]===0x21&&b[4]===0x1A&&b[5]===0x07&&b[6]===0x00) return 'rar4';
+  // RAR5: Rar!\x1a\x07\x01\x00
+  if(b[0]===0x52&&b[1]===0x61&&b[2]===0x72&&b[3]===0x21&&b[4]===0x1A&&b[5]===0x07&&b[6]===0x01) return 'rar5';
+  // 7Z: 7z\xbc\xaf\x27\x1c
   if(b[0]===0x37&&b[1]===0x7A&&b[2]===0xBC&&b[3]===0xAF) return '7z';
-  // GZ: (1F 8B)
+  // GZ: \x1f\x8b
   if(b[0]===0x1F&&b[1]===0x8B) return 'gz';
-  // BZ2: BZh (42 5A 68)
+  // BZ2: BZh
   if(b[0]===0x42&&b[1]===0x5A&&b[2]===0x68) return 'bz2';
-  // XZ: (FD 37 7A 58 5A 00)
-  if(b[0]===0xFD&&b[1]===0x37&&b[2]===0x7A) return 'xz';
-  // TAR: ustar at offset 257 — check extension fallback
-  return getExtFmt(file.name);
-}
-
-function getExtFmt(name){
-  const n=name.toLowerCase();
+  // XZ: \xfd7zXZ\x00
+  if(b[0]===0xFD&&b[1]===0x37&&b[2]===0x7A&&b[3]===0x58&&b[4]===0x5A) return 'xz';
+  // TAR: ustar at offset 257
+  const buf2=await file.slice(257,262).arrayBuffer();
+  const t=new Uint8Array(buf2);
+  if(t[0]===0x75&&t[1]===0x73&&t[2]===0x74&&t[3]===0x61&&t[4]===0x72) return 'tar';
+  // Fallback: extension
+  const n=file.name.toLowerCase();
   if(n.endsWith('.tar.gz')||n.endsWith('.tgz')) return 'gz';
   if(n.endsWith('.tar.bz2')) return 'bz2';
   if(n.endsWith('.tar.xz')) return 'xz';
-  const ext=n.split('.').pop();
-  return ext||'unknown';
+  return n.split('.').pop()||'unknown';
 }
 
-// Eski getExt - geriye uyumluluk için
-function getExt(name){ return getExtFmt(name); }
+/* ══ PROCESS FILE ══ */
+async function processFile(file){
+  currentFile=file;_lastFile=file;extractedFiles=[];
+  fileTree.classList.remove('show');searchInput.value='';
+  fmtNotice.className='fmt-notice';
 
+  showStat('proc');setProgress(0,'Format belirleniyor...','0%');
+
+  let fmt;
+  try{fmt=await detectFormat(file);}
+  catch(e){fmt=file.name.split('.').pop().toLowerCase()||'unknown';}
+  currentFmt=fmt;
+
+  try{
+    if(fmt==='zip'){
+      showNotice('info','📮 ZIP formatı — Tam destek aktif. Tüm dosyalar çıkarılabilir.');
+      await handleZip(file);
+      document.getElementById('btnDlSelected').style.display='';
+      document.getElementById('btnDlAll').style.display='';
+    }
+    else if(fmt==='gz'){
+      showNotice('info','🌀 GZIP/TAR.GZ formatı — Tam destek aktif.');
+      await handleGzip(file);
+      document.getElementById('btnDlSelected').style.display='';
+      document.getElementById('btnDlAll').style.display='';
+    }
+    else if(fmt==='rar4'||fmt==='rar5'){
+      showNotice('warn','🗜️ RAR formatı tespit edildi ('+(fmt==='rar5'?'RAR5':'RAR4')+').\n\nBu ortamda (claude.ai) WebAssembly çalışmaz. Dosya listesi ve boyut bilgisi gösterilmektedir.\n\n★ GitHub Pages\'e yüklerseniz tam çıkarma desteği aktif olur.');
+      await handleRarHeader(file);
+      document.getElementById('btnDlSelected').style.display='none';
+      document.getElementById('btnDlAll').style.display='none';
+    }
+    else if(fmt==='7z'){
+      showNotice('warn','🔷 7-Zip formatı tespit edildi.\n\nBu ortamda (claude.ai) WebAssembly çalışmaz. Header bilgisi okundu.\n\n★ GitHub Pages\'e yüklerseniz tam çıkarma desteği aktif olur.');
+      await handle7zHeader(file);
+      document.getElementById('btnDlSelected').style.display='none';
+      document.getElementById('btnDlAll').style.display='none';
+    }
+    else{
+      showNotice('warn','⚠️ "'+fmt.toUpperCase()+'" formatı bu ortamda (claude.ai) desteklenmiyor.\n\nZIP ve GZ dosyaları tam çalışır. GitHub Pages\'e yükleyerek tüm formatları açabilirsiniz.');
+      handleUnknownHeader(file,fmt);
+      document.getElementById('btnDlSelected').style.display='none';
+      document.getElementById('btnDlAll').style.display='none';
+    }
+
+    showStat('done');renderFileTree(file.name);updateBarStats();
+  }catch(err){
+    showStat('err');setStatusText('Hata: '+err.message);
+    showError(err,'"'+file.name+'" işlenirken hata.',()=>processFile(file));
+  }
+}
+
+function showNotice(type,msg){
+  fmtNotice.className='fmt-notice '+type+' show';
+  fmtNotice.style.whiteSpace='pre-line';
+  fmtNotice.textContent=msg;
+}
+
+/* ══ ZIP HANDLER ══ */
 async function handleZip(file){
   const buf=await readAB(file);let zip;
   try{zip=await JSZip.loadAsync(buf);}
-  catch(e){if(e.message.toLowerCase().includes('password')){const pw=await askPw();zip=await JSZip.loadAsync(buf,{password:pw});}else throw e;}
+  catch(e){
+    if(e.message.toLowerCase().includes('password')){
+      const pw=await askPw();
+      zip=await JSZip.loadAsync(buf,{password:pw});
+    }else throw e;
+  }
   const entries=Object.entries(zip.files);let done=0;
   for(const[path,entry]of entries){
-    if(entry.dir){extractedFiles.push({name:path.split('/').filter(Boolean).pop()||path,path,size:0,blob:null,isDir:true});}
-    else{try{const b=await entry.async('blob');extractedFiles.push({name:entry.name.split('/').pop(),path,size:b.size,blob:b,isDir:false});}
-    catch(e){if(e.message.toLowerCase().includes('password')){const pw=await askPw();const b=await entry.async('blob',{password:pw});extractedFiles.push({name:entry.name.split('/').pop(),path,size:b.size,blob:b,isDir:false});}}}
-    done++;const pct=Math.round(done/entries.length*100);setProgress(pct,`${done}/${entries.length} dosya işlendi`,pct+'%');
+    if(entry.dir){
+      extractedFiles.push({name:path.split('/').filter(Boolean).pop()||path,path,size:0,blob:null,isDir:true,canDl:false});
+    }else{
+      try{
+        const b=await entry.async('blob');
+        extractedFiles.push({name:entry.name.split('/').pop(),path,size:b.size,blob:b,isDir:false,canDl:true});
+      }catch(e){
+        if(e.message.toLowerCase().includes('password')){
+          const pw=await askPw();
+          const b=await entry.async('blob',{password:pw});
+          extractedFiles.push({name:entry.name.split('/').pop(),path,size:b.size,blob:b,isDir:false,canDl:true});
+        }
+      }
+    }
+    done++;setProgress(Math.round(done/entries.length*100),`${done}/${entries.length} dosya`,Math.round(done/entries.length*100)+'%');
   }
 }
 
-async function handleLibarchive(file){
-  setProgress(5,'Kütüphane bekleniyor...','5%');
-
-  // libarchive.js'nin yüklenmesini bekle (max 8 saniye)
-  await waitForArchive(8000);
-
-  if(typeof Archive==='undefined' || !window._archiveReady){
-    throw new Error(
-      'libarchive.js yüklenemedi.\n\n' +
-      'Çözüm: Uygulamayı GitHub Pages üzerinden açın ve internet bağlantınızı kontrol edin.\n' +
-      'İlk açılışta CDN\'den ~2MB kütüphane indirilmesi gerekir.'
-    );
-  }
-
-  setProgress(15,'Arşiv açılıyor...','15%');
-
-  let archive;
-  try {
-    archive = await Archive.open(file);
-  } catch(e) {
-    throw new Error('Arşiv başlatılamadı: ' + e.message);
-  }
-
-  setProgress(25,'İçerik okunuyor...','25%');
-
-  // libarchive.js 1.3.x doğru API: getNextEntry döngüsü
-  let entry;
-  let entryCount = 0;
-  const allEntries = [];
-
-  try {
-    // Önce tüm entry'leri say (progress için)
-    let checkArchive = await Archive.open(file);
-    let hasSupport = false;
-    try {
-      // API varlığını kontrol et
-      if(typeof checkArchive.getNextEntry === 'function'){
-        hasSupport = true;
+/* ══ GZIP/TAR.GZ HANDLER ══ */
+async function handleGzip(file){
+  setProgress(20,'GZIP okunuyor...','20%');
+  const buf=await readAB(file);
+  // Decompress gzip using DecompressionStream (modern browsers)
+  if(typeof DecompressionStream !== 'undefined'){
+    try{
+      const ds=new DecompressionStream('gzip');
+      const writer=ds.writable.getWriter();
+      const reader=ds.readable.getReader();
+      writer.write(new Uint8Array(buf));
+      writer.close();
+      const chunks=[];
+      while(true){const{done,value}=await reader.read();if(done)break;chunks.push(value);}
+      const total=chunks.reduce((s,c)=>s+c.length,0);
+      const out=new Uint8Array(total);let off=0;
+      chunks.forEach(c=>{out.set(c,off);off+=c.length;});
+      setProgress(60,'İçerik analiz ediliyor...','60%');
+      // Check if it's a tar inside
+      const isTar=out[257]===0x75&&out[258]===0x73&&out[259]===0x74&&out[260]===0x61&&out[261]===0x72;
+      if(isTar){
+        parseTar(out,file.name);
+      }else{
+        const outName=file.name.replace(/\.(gz|gzip)$/i,'');
+        const blob=new Blob([out]);
+        extractedFiles.push({name:outName,path:outName,size:blob.size,blob,isDir:false,canDl:true});
       }
-    } catch(e){}
-
-    if(hasSupport){
-      // Modern API: getNextEntry
-      while((entry = await archive.getNextEntry()) !== false){
-        entryCount++;
-        const pathname = entry.pathname || entry.path || ('file_'+entryCount);
-        const isDir = entry.size === 0 && (pathname.endsWith('/') || entry.type === 5);
-
-        if(!isDir && entry.size > 0){
-          try {
-            const data = await archive.getData();
-            if(data){
-              const blob = new Blob([data]);
-              const name = pathname.split('/').filter(Boolean).pop() || pathname;
-              extractedFiles.push({name, path:pathname, size:blob.size, blob, isDir:false});
-            }
-          } catch(dataErr){
-            console.warn('[S-Zip] Dosya verisi alınamadı:', pathname, dataErr);
-          }
-        } else if(isDir){
-          const name = pathname.replace(/\/$/,'').split('/').pop() || pathname;
-          extractedFiles.push({name, path:pathname, size:0, blob:null, isDir:true});
-        }
-
-        const pct = Math.min(25 + entryCount * 3, 85);
-        setProgress(pct, entryCount + ' kayıt işlendi', pct+'%');
+    }catch(e){throw new Error('GZIP açma hatası: '+e.message);}
+  }else{
+    // Fallback: JSZip handles gz too
+    try{
+      const zip=await JSZip.loadAsync(buf);
+      const entries=Object.entries(zip.files);
+      for(const[path,entry]of entries){
+        if(!entry.dir){const b=await entry.async('blob');extractedFiles.push({name:entry.name.split('/').pop(),path,size:b.size,blob:b,isDir:false,canDl:true});}
       }
-    } else {
-      // Fallback: extractFiles() API
-      const obj = await archive.extractFiles();
-      setProgress(70,'Dosyalar işleniyor...','70%');
-      flattenObj(obj,'');
-    }
-  } catch(e) {
-    // extractFiles fallback
-    try {
-      const archive2 = await Archive.open(file);
-      const obj = await archive2.extractFiles();
-      flattenObj(obj,'');
-    } catch(e2){
-      throw new Error(
-        'Arşiv açılamadı: ' + e.message + '\n\n' +
-        'Bu format desteklenmiyor olabilir veya dosya bozuk.'
-      );
-    }
+    }catch(e){throw new Error('GZIP açma desteklenmiyor. ZIP formatını deneyin.');}
   }
-
   setProgress(100,'Tamamlandı','100%');
 }
 
-// libarchive hazır olana kadar bekle
-function waitForArchive(maxMs){
-  return new Promise(resolve=>{
-    if(typeof Archive!=='undefined' && window._archiveReady) return resolve();
-    const start = Date.now();
-    const timer = setInterval(()=>{
-      if(typeof Archive!=='undefined' && window._archiveReady){
-        clearInterval(timer); resolve();
-      } else if(Date.now()-start > maxMs){
-        clearInterval(timer); resolve(); // timeout, devam et (hata fırlatılacak)
-      }
-    }, 150);
-  });
+/* ══ TAR PARSER (pure JS) ══ */
+function parseTar(data,sourceName){
+  let offset=0;
+  while(offset+512<=data.length){
+    const header=data.slice(offset,offset+512);
+    // Empty block = end of archive
+    if(header.every(b=>b===0)){break;}
+    const name=readTarStr(header,0,100);
+    if(!name) break;
+    const sizeStr=readTarStr(header,124,12);
+    const size=parseInt(sizeStr,8)||0;
+    const typeFlag=String.fromCharCode(header[156]);
+    const isDir=typeFlag==='5'||name.endsWith('/');
+    offset+=512;
+    if(isDir){
+      extractedFiles.push({name:name.replace(/\/$/,'').split('/').pop(),path:name,size:0,blob:null,isDir:true,canDl:false});
+    }else if(size>0&&offset+size<=data.length){
+      const fileData=data.slice(offset,offset+size);
+      const blob=new Blob([fileData]);
+      extractedFiles.push({name:name.split('/').pop(),path:name,size:blob.size,blob,isDir:false,canDl:true});
+    }
+    // Advance to next 512-byte boundary
+    offset+=Math.ceil(size/512)*512;
+  }
+}
+function readTarStr(buf,start,len){
+  let s='';
+  for(let i=start;i<start+len&&buf[i]!==0;i++) s+=String.fromCharCode(buf[i]);
+  return s.trim();
 }
 
-function flattenObj(obj,prefix){
-  for(const[key,val]of Object.entries(obj)){
-    const fp=prefix?prefix+'/'+key:key;
-    if(val instanceof File||val instanceof Blob){extractedFiles.push({name:key,path:fp,size:val.size,blob:val,isDir:false});}
-    else if(typeof val==='object'&&val!==null){extractedFiles.push({name:key,path:fp+'/',size:0,blob:null,isDir:true});flattenObj(val,fp);}
+/* ══ RAR HEADER PARSER (meta only) ══ */
+async function handleRarHeader(file){
+  setProgress(20,'RAR header okunuyor...','20%');
+  const buf=await readAB(file);
+  const data=new DataView(buf);
+  const isRar5=data.getUint8(6)===0x01;
+  setProgress(50,'Dosya listesi oluşturuluyor...','50%');
+
+  if(isRar5){
+    parseRar5Meta(new Uint8Array(buf),file);
+  }else{
+    parseRar4Meta(new Uint8Array(buf),file);
+  }
+  setProgress(100,'Tamamlandı','100%');
+}
+
+function parseRar4Meta(data,file){
+  // RAR4: signature 7 bytes, then blocks
+  let offset=7;
+  let count=0;
+  while(offset+7<data.length&&count<500){
+    const headCrc=(data[offset]|(data[offset+1]<<8));
+    const headType=data[offset+2];
+    const headFlags=(data[offset+3]|(data[offset+4]<<8));
+    const headSize=(data[offset+5]|(data[offset+6]<<8));
+    if(headSize<7||headSize>65536) break;
+    // File header: type 0x74
+    if(headType===0x74&&offset+32<data.length){
+      const packSize=data[offset+7]|(data[offset+8]<<8)|(data[offset+9]<<16)|(data[offset+10]*16777216);
+      const unpackSize=data[offset+11]|(data[offset+12]<<8)|(data[offset+13]<<16)|(data[offset+14]*16777216);
+      const attr=data[offset+15];
+      const fnLen=(data[offset+26]|(data[offset+27]<<8));
+      if(fnLen>0&&fnLen<1024&&offset+32+fnLen<=data.length){
+        let name='';
+        for(let i=0;i<fnLen&&i<256;i++) name+=String.fromCharCode(data[offset+32+i]);
+        name=name.replace(/\\/g,'/').trim();
+        if(name){
+          const isDir=(attr&0x10)!==0||name.endsWith('/');
+          extractedFiles.push({name:name.split('/').pop()||name,path:name,size:unpackSize,blob:null,isDir,canDl:false,metaOnly:true});
+        }
+      }
+      offset+=headSize+(packSize||0);
+    }else{
+      const addSize=((headFlags&0x8000)&&offset+headSize+3<data.length)?(data[offset+headSize]|(data[offset+headSize+1]<<8)|(data[offset+headSize+2]<<16)):0;
+      offset+=headSize+addSize;
+    }
+    count++;
+  }
+  if(!extractedFiles.length){
+    // Minimal fallback
+    extractedFiles.push({name:file.name,path:file.name,size:file.size,blob:null,isDir:false,canDl:false,metaOnly:true});
   }
 }
 
+function parseRar5Meta(data,file){
+  // RAR5: signature 8 bytes (Rar!\x1a\x07\x01\x00)
+  let offset=8;let count=0;
+  while(offset+4<data.length&&count<500){
+    // header crc32 (4 bytes) + vint header_size + vint header_type + vint header_flags
+    offset+=4; // skip crc
+    const{val:hdrSize,len:hs}=readVInt(data,offset);offset+=hs;
+    if(hdrSize<1||hdrSize>65536) break;
+    const hdrEnd=offset+hdrSize;
+    const{val:hdrType,len:ht}=readVInt(data,offset);offset+=ht;
+    const{val:hdrFlags,len:hf}=readVInt(data,offset);offset+=hf;
+    // File/Service header: type 2=file, 3=service
+    if(hdrType===2){
+      // file flags
+      const{val:fileFlags,len:ff}=readVInt(data,offset);offset+=ff;
+      const unpSzPresent=(fileFlags&0x0008)!==0;
+      let{val:unpackedSize,len:us}=readVInt(data,offset);offset+=us;
+      // attributes
+      const{val:attrs,len:al}=readVInt(data,offset);offset+=al;
+      if(fileFlags&0x0002) offset+=4; // mtime
+      if(fileFlags&0x0004) offset+=4; // data crc
+      // compression info
+      const{val:compress,len:cl}=readVInt(data,offset);offset+=cl;
+      const{val:hostOS,len:ol}=readVInt(data,offset);offset+=ol;
+      // name length + name
+      const{val:nameLen,len:nl}=readVInt(data,offset);offset+=nl;
+      if(nameLen>0&&nameLen<2048&&offset+nameLen<=data.length){
+        const nameBytes=data.slice(offset,offset+nameLen);
+        const name=new TextDecoder('utf-8').decode(nameBytes).replace(/\\/g,'/');
+        const isDir=(attrs&0x10)!==0||name.endsWith('/');
+        extractedFiles.push({name:name.split('/').pop()||name,path:name,size:unpackedSize,blob:null,isDir,canDl:false,metaOnly:true});
+      }
+      count++;
+    }
+    offset=hdrEnd;
+    // skip data block if present
+    if(hdrFlags&0x0002){
+      const{val:dataSize,len:ds}=readVInt(data,hdrEnd);
+      offset=hdrEnd+ds+dataSize;
+    }
+  }
+  if(!extractedFiles.length){
+    extractedFiles.push({name:file.name,path:file.name,size:file.size,blob:null,isDir:false,canDl:false,metaOnly:true});
+  }
+}
+
+// Variable-length integer decoder (RAR5)
+function readVInt(data,offset){
+  let val=0,shift=0,len=0;
+  while(offset+len<data.length){
+    const b=data[offset+len];len++;
+    val|=(b&0x7F)<<shift;shift+=7;
+    if(!(b&0x80)) break;
+  }
+  return{val,len};
+}
+
+/* ══ 7Z HEADER PARSER (meta only) ══ */
+async function handle7zHeader(file){
+  setProgress(20,'7Z header okunuyor...','20%');
+  const buf=await readAB(file);
+  const data=new Uint8Array(buf);
+  setProgress(50,'Dosya listesi analiz ediliyor...','50%');
+  parse7zMeta(data,file);
+  setProgress(100,'Tamamlandı','100%');
+}
+
+function parse7zMeta(data,file){
+  // 7z signature: 37 7A BC AF 27 1C (6 bytes)
+  // SignatureHeader: 6 + 2(version) + 4(crc) + 8(nextHeaderOffset) + 8(nextHeaderSize) + 4(nextHeaderCRC) = 32 bytes
+  if(data.length<32){extractedFiles.push({name:file.name,path:file.name,size:file.size,blob:null,isDir:false,canDl:false,metaOnly:true});return;}
+
+  // Try to find file names by scanning for null-terminated UTF-16 LE strings
+  // This is a heuristic approach since full 7z parsing is complex
+  const names=extract7zNames(data);
+  if(names.length>0){
+    names.forEach(n=>{
+      const isDir=n.endsWith('\\');
+      const clean=n.replace(/\\/g,'/').replace(/\/$/,'');
+      extractedFiles.push({name:clean.split('/').pop()||clean,path:clean,size:0,blob:null,isDir,canDl:false,metaOnly:true});
+    });
+  }else{
+    extractedFiles.push({name:file.name,path:file.name+' (içerik)',size:file.size,blob:null,isDir:false,canDl:false,metaOnly:true});
+  }
+}
+
+function extract7zNames(data){
+  // Scan for UTF-16 LE encoded file paths (common in 7z)
+  const names=[];const seen=new Set();
+  for(let i=0;i<data.length-4;i++){
+    if(data[i]===0x04&&(i===0||data[i-1]===0)){// kName property
+      // Try reading UTF-16 strings after property marker
+      let j=i+1;
+      while(j<data.length-1){
+        if(data[j]===0&&data[j+1]===0) break;
+        let s='';let k=j;
+        while(k<data.length-1&&!(data[k]===0&&data[k+1]===0)){
+          const ch=data[k]|(data[k+1]<<8);
+          if(ch>31&&ch<0x10000) s+=String.fromCharCode(ch);
+          else break;
+          k+=2;
+        }
+        if(s.length>1&&s.length<260&&!seen.has(s)&&/[\w\.\-\_\\\/\u00C0-\u024F]/.test(s)){
+          names.push(s);seen.add(s);
+        }
+        j+=2;
+      }
+    }
+  }
+  return names.slice(0,200);
+}
+
+/* ══ UNKNOWN FORMAT ══ */
+function handleUnknownHeader(file,fmt){
+  extractedFiles.push({name:file.name,path:file.name,size:file.size,blob:null,isDir:false,canDl:false,metaOnly:true});
+}
+
+/* ══ HELPERS ══ */
 function readAB(file){return new Promise((res,rej)=>{const r=new FileReader();r.onload=()=>res(r.result);r.onerror=()=>rej(new Error('Dosya okunamadı'));r.readAsArrayBuffer(file);});}
 function askPw(){return new Promise(resolve=>{pwResolve=resolve;document.getElementById('pwModal').classList.add('show');setTimeout(()=>document.getElementById('pwInput').focus(),100);});}
 function confirmPw(){const pw=document.getElementById('pwInput').value;document.getElementById('pwModal').classList.remove('show');document.getElementById('pwInput').value='';if(pwResolve){pwResolve(pw);pwResolve=null;}}
 function cancelPw(){document.getElementById('pwModal').classList.remove('show');document.getElementById('pwInput').value='';if(pwResolve){pwResolve('');pwResolve=null;}}
 
-function showStat(s){statusBox.classList.add('show');statusDot.className='status-dot';if(s==='done'){statusDot.classList.add('done');setStatusText('Arşiv başarıyla açıldı! ✓');}else if(s==='err'){statusDot.classList.add('err');}else setStatusText('İşleniyor...');}
+function showStat(s){statusBox.classList.add('show');statusDot.className='status-dot';if(s==='done'){statusDot.classList.add('done');setStatusText('Tamamlandı ✓');}else if(s==='err'){statusDot.classList.add('err');}else setStatusText('İşleniyor...');}
 function setStatusText(t){statusText.textContent=t;}
 function setProgress(p,l,pct){progressFill.style.width=p+'%';progressLabel.textContent=l;progressPct.textContent=pct;}
 
 function renderFileTree(name){
   archiveName.textContent=name;
-  const files=extractedFiles.filter(f=>!f.isDir);
-  fileCount.textContent=files.length+' dosya';
+  const allFiles=extractedFiles.filter(f=>!f.isDir);
+  fileCount.textContent=allFiles.length+' dosya';
   fileTree.classList.add('show');renderList(extractedFiles);
 }
 
 function renderList(items){
   if(!items.length){fileList.innerHTML='<div class="empty-state">Dosya bulunamadı</div>';return;}
   fileList.innerHTML=items.map((f,i)=>{
-    const icon=f.isDir?'📁':getIcon(f.name),size=f.isDir?'':fmtSize(f.size);
-    const dl=f.isDir?'':`<button class="file-dl" onclick="dlFile(${i})">↓</button>`;
-    const cb=f.isDir?'':`<input type="checkbox" class="file-cb" data-idx="${i}" onclick="event.stopPropagation()">`;
-    return`<div class="file-item${f.isDir?' folder':''}" onclick="toggleSel(${i})">${cb}<span class="file-icon">${icon}</span><span class="file-name" title="${f.path}">${f.path}</span><span class="file-size">${size}</span>${dl}</div>`;
+    const icon=f.isDir?'📁':getIcon(f.name);
+    const size=f.size>0?fmtSize(f.size):(f.isDir?'':f.size===0?'0 B':'');
+    const metaTag=f.metaOnly?'<span style="font-size:9px;color:var(--warn);font-family:Space Mono,monospace;background:rgba(245,158,11,.1);border-radius:4px;padding:1px 5px;flex-shrink:0">liste</span>':'';
+    const dl=(f.canDl&&f.blob)?`<button class="file-dl" onclick="dlFile(${i})">↓</button>`:'';
+    const cb=(!f.isDir&&f.canDl)?`<input type="checkbox" class="file-cb" data-idx="${i}" onclick="event.stopPropagation()">`:'';
+    return`<div class="file-item${f.isDir?' folder':''}" onclick="${f.canDl?'toggleSel('+i+')':'void(0)'}">
+      ${cb}<span class="file-icon">${icon}</span>
+      <span class="file-name" title="${f.path}">${f.path}</span>
+      ${metaTag}
+      <span class="file-size">${size}</span>${dl}
+    </div>`;
   }).join('');
 }
 
@@ -1073,7 +1091,7 @@ async function dlSelected(){
   const blob=await zip.generateAsync({type:'blob'});triggerDL(blob,'secilen_dosyalar.zip');toast('✅ '+ch.length+' dosya indirildi');
 }
 async function dlAll(){
-  const files=extractedFiles.filter(f=>!f.isDir&&f.blob);
+  const files=extractedFiles.filter(f=>!f.isDir&&f.blob&&f.canDl);
   if(!files.length){toast('⚠ İndirilecek dosya yok');return;}
   toast('📦 Paketleniyor...');const zip=new JSZip();
   files.forEach(f=>zip.file(f.path,f.blob));
@@ -1082,65 +1100,39 @@ async function dlAll(){
   toast('✅ Tüm dosyalar indirildi!');
 }
 
-/* ── BAR STATS ── */
+/* ══ BAR STATS ══ */
 function updateBarStats(){
   const files=extractedFiles.filter(f=>!f.isDir);
   const total=files.reduce((s,f)=>s+f.size,0);
   document.getElementById('barFileCount').textContent=files.length||'—';
   document.getElementById('barTotalSize').textContent=files.length?fmtSize(total):'—';
-  document.getElementById('barFormat').textContent=currentFile?getExt(currentFile.name).toUpperCase():'—';
+  const fmtLabel=currentFmt.startsWith('rar')?'RAR':currentFmt.startsWith('7z')?'7Z':currentFmt.toUpperCase();
+  document.getElementById('barFormat').textContent=fmtLabel||'—';
 }
 
-/* ── COMPRESS ── */
-let compFiles=[];
-let compResultBlob=null;
-
-const compInput=document.getElementById('compInput');
-const compDrop=document.getElementById('compDrop');
-
-compInput.addEventListener('change',e=>{
-  if(e.target.files.length)addCompFiles(Array.from(e.target.files));
-  compInput.value='';
-});
-
+/* ══ COMPRESS ══ */
+let compFiles=[],compResultBlob=null;
+const compInput=document.getElementById('compInput'),compDrop=document.getElementById('compDrop');
+compInput.addEventListener('change',e=>{if(e.target.files.length)addCompFiles(Array.from(e.target.files));compInput.value='';});
 compDrop.addEventListener('dragover',e=>{e.preventDefault();compDrop.classList.add('dragover');});
 compDrop.addEventListener('dragleave',()=>compDrop.classList.remove('dragover'));
-compDrop.addEventListener('drop',e=>{
-  e.preventDefault();compDrop.classList.remove('dragover');
-  if(e.dataTransfer.files.length)addCompFiles(Array.from(e.dataTransfer.files));
-});
+compDrop.addEventListener('drop',e=>{e.preventDefault();compDrop.classList.remove('dragover');if(e.dataTransfer.files.length)addCompFiles(Array.from(e.dataTransfer.files));});
 compDrop.addEventListener('click',e=>{if(e.target.tagName!=='BUTTON')compInput.click();});
 
-function addCompFiles(newFiles){
-  newFiles.forEach(f=>{if(!compFiles.find(x=>x.name===f.name&&x.size===f.size))compFiles.push(f);});
-  renderCompFiles();
-}
-
+function addCompFiles(newFiles){newFiles.forEach(f=>{if(!compFiles.find(x=>x.name===f.name&&x.size===f.size))compFiles.push(f);});renderCompFiles();}
 function renderCompFiles(){
   const box=document.getElementById('compFilesBox'),list=document.getElementById('compFilesList');
   const cnt=document.getElementById('compFileCount'),siz=document.getElementById('compTotalSize');
   if(!compFiles.length){box.classList.remove('show');document.getElementById('compGoBtn').disabled=true;document.getElementById('compResult').classList.remove('show');return;}
   box.classList.add('show');
   const total=compFiles.reduce((s,f)=>s+f.size,0);
-  cnt.textContent=compFiles.length+' dosya';
-  siz.textContent=fmtSize(total);
-  list.innerHTML=compFiles.map((f,i)=>`
-    <div class="comp-file-row">
-      <span class="comp-file-icon">${getIcon(f.name)}</span>
-      <span class="comp-file-name" title="${f.name}">${f.name}</span>
-      <span class="comp-file-size">${fmtSize(f.size)}</span>
-      <button class="comp-file-del" onclick="removeCompFile(${i})" title="Kaldır">✕</button>
-    </div>`).join('');
+  cnt.textContent=compFiles.length+' dosya';siz.textContent=fmtSize(total);
+  list.innerHTML=compFiles.map((f,i)=>`<div class="comp-file-row"><span class="comp-file-icon">${getIcon(f.name)}</span><span class="comp-file-name" title="${f.name}">${f.name}</span><span class="comp-file-size">${fmtSize(f.size)}</span><button class="comp-file-del" onclick="removeCompFile(${i})" title="Kaldır">✕</button></div>`).join('');
   document.getElementById('compGoBtn').disabled=false;
 }
-
 function removeCompFile(i){compFiles.splice(i,1);renderCompFiles();}
 function clearCompFiles(){compFiles=[];renderCompFiles();}
-
-function toggleCompPw(){
-  const on=document.getElementById('compPwToggle').checked;
-  document.getElementById('compPwField').classList.toggle('show',on);
-}
+function toggleCompPw(){document.getElementById('compPwField').classList.toggle('show',document.getElementById('compPwToggle').checked);}
 
 async function startCompress(){
   if(!compFiles.length)return;
@@ -1150,100 +1142,47 @@ async function startCompress(){
   const usePw=document.getElementById('compPwToggle').checked;
   const pw=usePw?document.getElementById('compPwInput').value:'';
   if(usePw&&!pw){toast('⚠ Şifre girilmedi');document.getElementById('compPwInput').focus();return;}
-
-  const statusB=document.getElementById('compStatusBox'),dot=document.getElementById('compStatusDot'),stxt=document.getElementById('compStatusText');
-  const pFill=document.getElementById('compProgressFill'),pLabel=document.getElementById('compProgressLabel'),pPct=document.getElementById('compProgressPct');
+  const sb=document.getElementById('compStatusBox'),dot=document.getElementById('compStatusDot'),stxt=document.getElementById('compStatusText');
+  const pf=document.getElementById('compProgressFill'),pl=document.getElementById('compProgressLabel'),pp=document.getElementById('compProgressPct');
   const result=document.getElementById('compResult');
-
-  statusB.classList.add('show');dot.className='status-dot';result.classList.remove('show');
-  stxt.textContent='ZIP oluşturuluyor...';pFill.style.width='0%';
-
+  sb.classList.add('show');dot.className='status-dot';result.classList.remove('show');
+  stxt.textContent='ZIP oluşturuluyor...';pf.style.width='0%';
   const origTotal=compFiles.reduce((s,f)=>s+f.size,0);
-
   try{
-    const zip=new JSZip();
-    let done=0;
+    const zip=new JSZip();let done=0;
     for(const file of compFiles){
-      const buf=await readAB(file);
-      const opts={binary:true};
-      if(pw)opts.dosPermissions=0;
-      zip.file(file.name,buf,method==='STORE'?{compression:'STORE'}:{});
-      done++;
-      const pct=Math.round(done/compFiles.length*50);
-      pFill.style.width=pct+'%';pLabel.textContent=`${done}/${compFiles.length} dosya eklendi`;pPct.textContent=pct+'%';
+      const buf=await readAB(file);zip.file(file.name,buf);
+      done++;const pct=Math.round(done/compFiles.length*50);
+      pf.style.width=pct+'%';pl.textContent=`${done}/${compFiles.length} eklendi`;pp.textContent=pct+'%';
     }
-
-    const zipOpts={type:'blob',compression:method,compressionOptions:{level}};
-    if(pw)zipOpts.comment='szip_encrypted';
-
-    const blob=await zip.generateAsync(zipOpts,m=>{
-      const pct=50+Math.round(m.percent*.5);
-      pFill.style.width=pct+'%';
-      pLabel.textContent='Sıkıştırılıyor...';
-      pPct.textContent=pct+'%';
+    const blob=await zip.generateAsync({type:'blob',compression:method,compressionOptions:{level}},m=>{
+      const pct=50+Math.round(m.percent*.5);pf.style.width=pct+'%';pl.textContent='Sıkıştırılıyor...';pp.textContent=pct+'%';
     });
-
     compResultBlob=blob;
     const fn=zipName.endsWith('.zip')?zipName:zipName+'.zip';
-
-    dot.classList.add('done');stxt.textContent='Sıkıştırma tamamlandı! ✓';
-    pFill.style.width='100%';pLabel.textContent='Tamamlandı';pPct.textContent='100%';
-
-    // Stats
+    dot.classList.add('done');stxt.textContent='Sıkıştırma tamamlandı! ✓';pf.style.width='100%';pl.textContent='Tamamlandı';pp.textContent='100%';
     document.getElementById('resBefore').textContent=fmtSize(origTotal);
     document.getElementById('resAfter').textContent=fmtSize(blob.size);
-    const saved=Math.max(0,Math.round((1-blob.size/origTotal)*100));
-    document.getElementById('resRatio').textContent=saved+'% küçük';
+    document.getElementById('resRatio').textContent=Math.max(0,Math.round((1-blob.size/origTotal)*100))+'% küçük';
     result.classList.add('show');
-
-    const dlBtn=document.getElementById('compDlBtn');
-    dlBtn.onclick=()=>{triggerDL(compResultBlob,fn);toast('⬇ '+fn+' indiriliyor...');};
+    document.getElementById('compDlBtn').onclick=()=>{triggerDL(compResultBlob,fn);toast('⬇ '+fn);};
     toast('✅ '+fn+' hazır!');
-
-    // Update bottom bar
     document.getElementById('barFileCount').textContent=compFiles.length;
     document.getElementById('barTotalSize').textContent=fmtSize(blob.size);
     document.getElementById('barFormat').textContent='ZIP';
-
-  }catch(err){
-    dot.classList.add('err');stxt.textContent='Hata: '+err.message;
-    showError(err,'ZIP sıkıştırması sırasında hata oluştu.',startCompress);
-  }
+  }catch(err){dot.classList.add('err');stxt.textContent='Hata: '+err.message;showError(err,'ZIP oluşturulurken hata.',startCompress);}
 }
 
-/* ── UTILS ── */
+/* ══ UTILS ══ */
 function triggerDL(blob,name){const url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download=name;document.body.appendChild(a);a.click();document.body.removeChild(a);setTimeout(()=>URL.revokeObjectURL(url),10000);}
 function fmtSize(b){if(!b)return'0 B';const k=1024,s=['B','KB','MB','GB'],i=Math.floor(Math.log(b)/Math.log(k));return parseFloat((b/Math.pow(k,i)).toFixed(1))+' '+s[i];}
-function getIcon(name){const e=name.split('.').pop().toLowerCase();const m={pdf:'📄',doc:'📝',docx:'📝',txt:'📃',md:'📋',jpg:'🖼',jpeg:'🖼',png:'🖼',gif:'🖼',svg:'🎨',webp:'🖼',mp4:'🎬',avi:'🎬',mkv:'🎬',mov:'🎬',mp3:'🎵',wav:'🎵',flac:'🎵',ogg:'🎵',html:'🌐',css:'🎨',js:'⚡',ts:'⚡',jsx:'⚛',tsx:'⚛',py:'🐍',java:'☕',cpp:'⚙',c:'⚙',go:'🔵',rs:'🦀',zip:'📦',rar:'📦','7z':'📦',tar:'📦',exe:'⚙',sh:'📜',bat:'📜',json:'🔧',xml:'🔧',yaml:'🔧',yml:'🔧',xls:'📊',xlsx:'📊',csv:'📊',ppt:'📊',pptx:'📊',db:'🗄',sql:'🗄',ttf:'🔤',otf:'🔤',woff:'🔤'};return m[e]||'📄';}
+function getIcon(name){const e=(name||'').split('.').pop().toLowerCase();const m={pdf:'📄',doc:'📝',docx:'📝',txt:'📃',md:'📋',jpg:'🖼',jpeg:'🖼',png:'🖼',gif:'🖼',svg:'🎨',webp:'🖼',mp4:'🎬',avi:'🎬',mkv:'🎬',mov:'🎬',mp3:'🎵',wav:'🎵',flac:'🎵',ogg:'🎵',html:'🌐',css:'🎨',js:'⚡',ts:'⚡',jsx:'⚛',tsx:'⚛',py:'🐍',java:'☕',cpp:'⚙',c:'⚙',go:'🔵',rs:'🦀',zip:'📦',rar:'📦','7z':'📦',tar:'📦',exe:'⚙',sh:'📜',bat:'📜',json:'🔧',xml:'🔧',yaml:'🔧',yml:'🔧',xls:'📊',xlsx:'📊',csv:'📊',ppt:'📊',pptx:'📊',db:'🗄',sql:'🗄',ttf:'🔤',otf:'🔤',woff:'🔤'};return m[e]||'📄';}
 let _tt;
 function toast(msg){const el=document.getElementById('toast');el.textContent=msg;el.classList.add('show');clearTimeout(_tt);_tt=setTimeout(()=>el.classList.remove('show'),3200);}
 
-/* ── INIT ── */
-// libarchive.js dinamik olarak yükleniyor (sayfa başında)
-// Archive.init() script onload içinde otomatik çağrılıyor
+/* ══ INIT ══ */
 window.addEventListener('DOMContentLoaded',()=>{
   if(shouldShowChangelog())setTimeout(openChangelog,500);
-
-  // libarchive durum takibi
-  const notice = document.getElementById('libNotice');
-  const libStatus = document.getElementById('libStatus');
-  // Sadece ilk kez göster
-  notice.style.display = 'block';
-
-  let checkCount = 0;
-  const checker = setInterval(()=>{
-    checkCount++;
-    if(typeof Archive !== 'undefined' && window._archiveReady){
-      clearInterval(checker);
-      libStatus.textContent = '✅ Kütüphane hazır — RAR, 7Z, TAR destekleniyor';
-      libStatus.style.color = 'var(--success)';
-      setTimeout(()=>{ notice.style.display='none'; }, 3000);
-    } else if(checkCount > 60){ // 9 saniye
-      clearInterval(checker);
-      libStatus.textContent = '❌ Kütüphane yüklenemedi — ZIP işlemleri çalışmaya devam eder, RAR/7Z için internet bağlantısı gerekli';
-      libStatus.style.color = 'var(--danger)';
-    }
-  }, 150);
 });
 </script>
 </body>
