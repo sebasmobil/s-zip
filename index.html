@@ -3,9 +3,9 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>S-Zip Pro 1.0.03</title>
+<title>S-Zip Pro 1.0.04</title>
 <!--
-  S-Zip Pro 1.0.03
+  S-Zip Pro 1.0.04
   © sebasmobil
   GNU Affero General Public License Version 3 (GNU AGPL v3)
   https://www.gnu.org/licenses/agpl-3.0.html
@@ -352,7 +352,30 @@ footer{text-align:center;margin-top:36px;color:var(--muted);font-size:11px;font-
 .rar-note{background:rgba(var(--acc-rgb),.06);border:1px solid rgba(var(--acc-rgb),.2);border-radius:10px;padding:12px 14px;font-size:12px;color:var(--text2);line-height:1.6;font-family:'Space Mono',monospace}
 .rar-note strong{color:var(--acc)}
 
-@media(max-width:400px){.rar-apps{grid-template-columns:1fr}}
+/* ── EXPORT MODAL ── */
+.exp-overlay{position:fixed;inset:0;background:rgba(0,0,0,.8);backdrop-filter:blur(8px);z-index:600;display:flex;align-items:center;justify-content:center;padding:16px;opacity:0;pointer-events:none;transition:opacity .3s}
+.exp-overlay.show{opacity:1;pointer-events:all}
+.exp-modal{background:var(--surface);border:1px solid var(--border);border-radius:22px;width:100%;max-width:460px;overflow:hidden;box-shadow:0 30px 80px var(--shadow);transform:scale(.94);transition:transform .35s cubic-bezier(.34,1.3,.64,1)}
+.exp-overlay.show .exp-modal{transform:scale(1)}
+.exp-header{padding:20px 22px 16px;background:rgba(245,158,11,.07);border-bottom:1px solid rgba(245,158,11,.2)}
+.exp-title{font-family:'Space Mono',monospace;font-size:15px;font-weight:700;color:var(--warn);margin-bottom:4px}
+.exp-sub{font-size:13px;color:var(--muted)}
+.exp-count{display:inline-block;background:rgba(245,158,11,.15);border:1px solid rgba(245,158,11,.3);border-radius:100px;padding:2px 10px;font-family:'Space Mono',monospace;font-size:11px;color:var(--warn);margin-top:6px}
+.exp-body{max-height:200px;overflow-y:auto;padding:10px 0}
+.exp-body::-webkit-scrollbar{width:4px}.exp-body::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px}
+.exp-file-row{display:flex;align-items:center;gap:10px;padding:7px 22px}
+.exp-file-icon{font-size:14px;flex-shrink:0}
+.exp-file-name{flex:1;font-family:'Space Mono',monospace;font-size:11px;color:var(--text2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.exp-file-size{font-size:10px;color:var(--muted);font-family:'Space Mono',monospace;flex-shrink:0}
+.exp-footer{padding:14px 22px;border-top:1px solid var(--border);background:var(--surface2)}
+.exp-msg{font-size:12px;color:var(--muted);line-height:1.6;margin-bottom:12px;font-family:'Space Mono',monospace}
+.exp-msg strong{color:var(--warn)}
+.exp-btns{display:flex;gap:8px}
+.exp-btn{flex:1;padding:11px;border-radius:10px;font-family:'Space Mono',monospace;font-size:12px;font-weight:700;cursor:pointer;border:1px solid var(--border);transition:all .2s;display:flex;align-items:center;justify-content:center;gap:6px;text-decoration:none}
+.exp-btn.close{background:var(--surface);color:var(--muted)}.exp-btn.close:hover{color:var(--text)}
+.exp-btn.go{background:linear-gradient(135deg,var(--acc),var(--acc2));color:#000;border-color:transparent}.exp-btn.go:hover{transform:translateY(-1px);box-shadow:0 5px 16px rgba(var(--acc-rgb),.3)}
+
+@media(max-width:560px){
   .tree-header{flex-direction:column;align-items:flex-start}
   .formats-grid{grid-template-columns:repeat(4,1fr)}
   .info-list{grid-template-columns:1fr}
@@ -360,6 +383,7 @@ footer{text-align:center;margin-top:36px;color:var(--muted);font-size:11px;font-
   .comp-result-grid{grid-template-columns:1fr 1fr}
   .bar-center{display:none}
 }
+@media(max-width:400px){.rar-apps{grid-template-columns:1fr}}
 @media(max-width:380px){.formats-grid{grid-template-columns:repeat(3,1fr)}}
 </style>
 </head>
@@ -370,13 +394,13 @@ footer{text-align:center;margin-top:36px;color:var(--muted);font-size:11px;font-
 <div class="cl-overlay" id="clOverlay">
   <div class="cl-modal">
     <div class="cl-header">
-      <div class="cl-header-top"><span class="cl-app-label">S-ZIP PRO</span><span class="cl-ver-badge">Pro 1.0.03</span></div>
+      <div class="cl-header-top"><span class="cl-app-label">S-ZIP PRO</span><span class="cl-ver-badge">Pro 1.0.04</span></div>
       <div class="cl-title">Yenilikler 🎉</div>
       <div class="cl-subtitle">Bu sürümde neler değişti — aşağı kaydır</div>
     </div>
     <div class="cl-body" id="clBody">
       <div class="cl-section">
-        <div class="cl-section-label new">✦ 1.0.03 — Yeni</div>
+        <div class="cl-section-label new">✦ 1.0.04 — Yeni</div>
         <div class="cl-item"><div class="cl-item-icon">📁</div><div><div class="cl-item-name">Klasör Yapısıyla Kaydetme</div><div class="cl-item-desc">Arşiv içindeki tüm dosyalar, orijinal klasör hiyerarşisi korunarak ZIP olarak paketlenip kaydedilebilir. RAR/7Z listesi için de çalışır.</div></div></div>
         <div class="cl-item"><div class="cl-item-icon">📂</div><div><div class="cl-item-name">Klasör Olarak İndir</div><div class="cl-item-desc">ZIP dosyalarında her klasör ayrı ayrı ZIP olarak da indirilebilir. Ağaç görünümünde klasör ikonuna tıklayın.</div></div></div>
         <div class="cl-item"><div class="cl-item-icon">⚖️</div><div><div class="cl-item-name">GNU AGPL v3 Lisansı</div><div class="cl-item-desc">S-Zip Pro artık GNU Affero General Public License Version 3 ile lisanslanmıştır. © sebasmobil</div></div></div>
@@ -447,6 +471,30 @@ footer{text-align:center;margin-top:36px;color:var(--muted);font-size:11px;font-
     </div>
   </div>
 </div>
+<!-- EXPORT MODAL (RAR/7Z için uyarı) -->
+<div class="exp-overlay" id="expOverlay">
+  <div class="exp-modal">
+    <div class="exp-header">
+      <div class="exp-title">⚠️ Dışa Aktarma Kısıtlaması</div>
+      <div class="exp-sub">Bu dosyalar RAR/7Z arşivinden okundu — gerçek içerik bu ortamda çıkarılamaz.</div>
+      <div class="exp-count" id="expCount">0 dosya seçili</div>
+    </div>
+    <div class="exp-body" id="expFileList"></div>
+    <div class="exp-footer">
+      <div class="exp-msg">
+        <strong>Ne yapabilirsiniz?</strong><br>
+        RAR dosyasını iPhone'daki <strong>iZip</strong> veya <strong>RAR</strong> uygulamasıyla açın.<br>
+        Dosyaları Dosyalar.app'e istediğiniz konuma kaydedin.
+      </div>
+      <div class="exp-btns">
+        <button class="exp-btn close" onclick="closeExpModal()">✕ Kapat</button>
+        <a class="exp-btn go" href="https://apps.apple.com/app/rar/id1160461961" target="_blank">📲 RAR Uygulaması</a>
+        <a class="exp-btn go" href="https://apps.apple.com/app/izip-zip-unzip-unrar-tool/id413971331" target="_blank">📦 iZip</a>
+      </div>
+    </div>
+  </div>
+</div>
+
 <div class="toast" id="toast"></div>
 
 <!-- MAIN -->
@@ -455,7 +503,7 @@ footer{text-align:center;margin-top:36px;color:var(--muted);font-size:11px;font-
   <div class="topbar">
     <div class="topbar-left">
       <div class="app-icon">📦</div>
-      <div><div class="app-name">S-<span>Zip</span></div><span class="app-ver">PRO 1.0.03</span></div>
+      <div><div class="app-name">S-<span>Zip</span></div><span class="app-ver">PRO 1.0.04</span></div>
     </div>
     <div class="topbar-right">
       <div class="palette-wrap" title="Renk Teması">
@@ -609,13 +657,16 @@ footer{text-align:center;margin-top:36px;color:var(--muted);font-size:11px;font-
         <div class="tree-header-left">
           <span class="tree-title" id="archiveName">arşiv.zip</span>
           <span class="file-count" id="fileCount">0 dosya</span>
+          <span class="file-count" id="selCount" style="display:none;background:rgba(var(--acc-rgb),.15);border-color:rgba(var(--acc-rgb),.4)">0 seçili</span>
         </div>
         <div class="tree-actions">
           <button class="action-btn" onclick="selectAll()">☑ Tümünü Seç</button>
           <button class="action-btn" onclick="clearSel()">☐ Temizle</button>
-          <button class="action-btn primary" id="btnDlSelected" onclick="dlSelected()">⬇ Seçilenleri İndir</button>
-          <button class="action-btn primary" id="btnDlAll" onclick="dlAll()">📦 Tümünü İndir</button>
-          <button class="action-btn" id="btnDlFolder" onclick="dlAsFolder()" style="display:none;border-color:rgba(var(--acc2-rgb),.4);color:var(--acc2)">📁 Klasör Yapısıyla Kaydet</button>
+          <button class="action-btn primary" id="btnExport" onclick="exportSelected()" style="display:none">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+            Dışa Aktar
+          </button>
+          <button class="action-btn" id="btnDlAll" onclick="dlAll()" style="display:none">📦 Tümünü Aktar</button>
         </div>
       </div>
       <div class="search-bar">
@@ -718,7 +769,7 @@ footer{text-align:center;margin-top:36px;color:var(--muted);font-size:11px;font-
     </div>
   </div><!-- /panelCompress -->
 
-  <footer>S-Zip Pro 1.0.03 — © sebasmobil — GNU AGPL v3</footer>
+  <footer>S-Zip Pro 1.0.04 — © sebasmobil — GNU AGPL v3</footer>
 </div><!-- /page -->
 
 <!-- BOTTOM BAR -->
@@ -726,7 +777,7 @@ footer{text-align:center;margin-top:36px;color:var(--muted);font-size:11px;font-
   <div class="bar-info-pill">
     <div class="bar-logo">📦</div>
     <div><div class="bar-appname">S-<span>Zip</span></div></div>
-    <span class="bar-ver-tag">Pro 1.0.03</span>
+    <span class="bar-ver-tag">Pro 1.0.04</span>
   </div>
   <div class="bar-center">
     <div class="bar-stat"><span class="bar-stat-val" id="barFileCount">—</span><span class="bar-stat-label">DOSYA</span></div>
@@ -750,7 +801,7 @@ footer{text-align:center;margin-top:36px;color:var(--muted);font-size:11px;font-
 'use strict';
 
 /*
- * S-Zip Pro 1.0.03
+ * S-Zip Pro 1.0.04
  * © sebasmobil
  * GNU Affero General Public License Version 3 (GNU AGPL v3)
  * https://www.gnu.org/licenses/agpl-3.0.html
@@ -769,7 +820,7 @@ function switchTab(t){['extract','compress'].forEach(id=>{const cap=id.charAt(0)
 function openMail(e){e.preventDefault();window.location.href='mailto:?subject='+encodeURIComponent('sebasmobil S-Zip İletişim');}
 
 /* ══ CHANGELOG ══ */
-const APP_VERSION='Pro_1.0.03',LS_CL='szip_cl';
+const APP_VERSION='Pro_1.0.04',LS_CL='szip_cl';
 function shouldShowChangelog(){try{const d=JSON.parse(localStorage.getItem(LS_CL)||'null');if(!d)return true;if(d.version!==APP_VERSION)return true;return!d.dontShow;}catch(e){return true;}}
 function saveCLPref(ds){try{localStorage.setItem(LS_CL,JSON.stringify({version:APP_VERSION,dontShow:ds}));}catch(e){}}
 function openChangelog(){document.getElementById('dontShowCb').checked=false;document.getElementById('clOverlay').classList.add('show');setTimeout(()=>{const b=document.getElementById('clBody'),h=document.getElementById('clScrollHint');h.classList.toggle('hidden',b.scrollHeight<=b.clientHeight+12);},120);}
@@ -793,7 +844,7 @@ function showError(err,subtitle,retryFn){
   document.getElementById('errOverlay').classList.add('show');
 }
 function closeErrModal(){document.getElementById('errOverlay').classList.remove('show');}
-function copyErrReport(){const r=['=== S-Zip Pro 1.0.03 Hata Raporu ===','Zaman: '+document.getElementById('errTime').textContent,'Tür: '+document.getElementById('errType').textContent,'Satır: '+document.getElementById('errLine').textContent,'Dosya: '+document.getElementById('errFile').textContent,'---',document.getElementById('errMessage').textContent].join('\n');navigator.clipboard.writeText(r).then(()=>toast('📋 Kopyalandı!')).catch(()=>toast('⚠ Kopyalama başarısız'));}
+function copyErrReport(){const r=['=== S-Zip Pro 1.0.04 Hata Raporu ===','Zaman: '+document.getElementById('errTime').textContent,'Tür: '+document.getElementById('errType').textContent,'Satır: '+document.getElementById('errLine').textContent,'Dosya: '+document.getElementById('errFile').textContent,'---',document.getElementById('errMessage').textContent].join('\n');navigator.clipboard.writeText(r).then(()=>toast('📋 Kopyalandı!')).catch(()=>toast('⚠ Kopyalama başarısız'));}
 function retryAction(){closeErrModal();if(_retryFn)setTimeout(_retryFn,200);else if(_lastFile)setTimeout(()=>processFile(_lastFile),200);else window.location.reload();}
 window.addEventListener('error',e=>showError(e.error||new Error(e.message),'Beklenmeyen JavaScript hatası.'));
 window.addEventListener('unhandledrejection',e=>showError(e.reason instanceof Error?e.reason:new Error(String(e.reason)),'İşlenmemiş Promise hatası.'));
@@ -863,39 +914,32 @@ async function processFile(file){
     if(fmt==='zip'){
       showNotice('info','📮 ZIP formatı — Tam destek aktif. Tüm dosyalar çıkarılabilir.');
       await handleZip(file);
-      document.getElementById('btnDlSelected').style.display='';
+      document.getElementById('btnExport').style.display='none'; // seçim yapılınca görünecek
       document.getElementById('btnDlAll').style.display='';
-      document.getElementById('btnDlFolder').style.display='';
     }
     else if(fmt==='gz'){
       showNotice('info','🌀 GZIP/TAR.GZ formatı — Tam destek aktif.');
       await handleGzip(file);
-      document.getElementById('btnDlSelected').style.display='';
+      document.getElementById('btnExport').style.display='none';
       document.getElementById('btnDlAll').style.display='';
-      document.getElementById('btnDlFolder').style.display='';
     }
     else if(fmt==='rar4'||fmt==='rar5'){
       await handleRarHeader(file);
-      document.getElementById('btnDlSelected').style.display='none';
+      document.getElementById('btnExport').style.display='none';
       document.getElementById('btnDlAll').style.display='none';
-      document.getElementById('btnDlFolder').style.display='';
-
-      // RAR için özel yönlendirme paneli göster
       showRarGuide(file, fmt);
     }
     else if(fmt==='7z'){
-      showNotice('warn','🔷 7-Zip formatı tespit edildi.\n\nDosya listesi gösteriliyor. "📁 Klasör Yapısıyla Kaydet" ile yapıyı koruyarak ZIP olarak kaydedebilirsiniz.\n\n★ GitHub Pages\'e yüklerseniz gerçek dosya içerikleri de çıkarılabilir.');
+      showNotice('warn','🔷 7-Zip formatı tespit edildi.\n\nDosya listesi gösteriliyor. GitHub Pages\'e yüklerseniz tam çıkarma aktif olur.');
       await handle7zHeader(file);
-      document.getElementById('btnDlSelected').style.display='none';
+      document.getElementById('btnExport').style.display='none';
       document.getElementById('btnDlAll').style.display='none';
-      document.getElementById('btnDlFolder').style.display='';
     }
     else{
-      showNotice('warn','⚠️ "'+fmt.toUpperCase()+'" formatı bu ortamda (claude.ai) desteklenmiyor.\n\nZIP ve GZ dosyaları tam çalışır. GitHub Pages\'e yükleyerek tüm formatları açabilirsiniz.');
+      showNotice('warn','⚠️ "'+fmt.toUpperCase()+'" formatı bu ortamda desteklenmiyor.\nZIP ve GZ dosyaları tam çalışır.');
       handleUnknownHeader(file,fmt);
-      document.getElementById('btnDlSelected').style.display='none';
+      document.getElementById('btnExport').style.display='none';
       document.getElementById('btnDlAll').style.display='none';
-      document.getElementById('btnDlFolder').style.display='';
     }
 
     showStat('done');renderFileTree(file.name);updateBarStats();
@@ -1238,114 +1282,161 @@ function filterFiles(){const q=searchInput.value.toLowerCase();renderList(q?extr
 function toggleSel(i){
   const cb=document.querySelector(`.file-cb[data-idx="${i}"]`);
   if(cb){cb.checked=!cb.checked;cb.closest('.file-item').classList.toggle('selected',cb.checked);}
+  updateSelectionUI();
 }
-// toggleSelDirect: checkbox click (already toggled by browser)
 function toggleSelDirect(cb,i){
   cb.closest('.file-item').classList.toggle('selected',cb.checked);
+  updateSelectionUI();
 }
 function selectAll(){
   document.querySelectorAll('.file-cb').forEach(cb=>{cb.checked=true;cb.closest('.file-item').classList.add('selected');});
-  toast('☑ '+document.querySelectorAll('.file-cb').length+' dosya seçildi');
+  updateSelectionUI();
 }
 function clearSel(){
   document.querySelectorAll('.file-cb').forEach(cb=>{cb.checked=false;cb.closest('.file-item').classList.remove('selected');});
+  updateSelectionUI();
 }
-function dlFile(i){const f=extractedFiles[i];if(!f||!f.blob)return;triggerDL(f.blob,f.name);toast('⬇ İndiriliyor: '+f.name);}
 
-async function dlSelected(){
+function updateSelectionUI(){
+  const total=document.querySelectorAll('.file-cb').length;
+  const sel=document.querySelectorAll('.file-cb:checked').length;
+  const sc=document.getElementById('selCount');
+  const btnExport=document.getElementById('btnExport');
+  if(sel>0){
+    sc.style.display='';sc.textContent=sel+' seçili';
+    btnExport.style.display='';
+    btnExport.textContent='';
+    btnExport.innerHTML='<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg> Dışa Aktar ('+sel+')';
+  }else{
+    sc.style.display='none';
+    btnExport.style.display='none';
+  }
+}
+
+// ── Tek dosya indir (gerçek blob)
+function dlFile(i){
+  const f=extractedFiles[i];
+  if(!f||!f.blob)return;
+  triggerDL(f.blob,f.name);
+  toast('⬇ İndiriliyor: '+f.name);
+}
+
+// ── DIŞA AKTAR — ana fonksiyon
+async function exportSelected(){
   const checked=[...document.querySelectorAll('.file-cb:checked')].map(cb=>parseInt(cb.dataset.idx));
   if(!checked.length){toast('⚠ Önce dosya seçin');return;}
 
-  // Check if any real (downloadable) files selected
-  const realFiles=checked.map(i=>extractedFiles[i]).filter(f=>f&&f.canDl&&f.blob);
-  const metaFiles=checked.map(i=>extractedFiles[i]).filter(f=>f&&f.metaOnly);
+  const selFiles=checked.map(i=>extractedFiles[i]).filter(Boolean);
+  const realFiles=selFiles.filter(f=>!f.isDir&&f.canDl&&f.blob);
+  const metaFiles=selFiles.filter(f=>!f.isDir&&f.metaOnly);
 
-  if(realFiles.length===0&&metaFiles.length>0){
-    // Only meta files selected — save as folder ZIP
-    await dlSelectedAsFolder(checked); return;
-  }
-  if(realFiles.length===1&&metaFiles.length===0){
-    dlFile(checked.find(i=>extractedFiles[i]&&extractedFiles[i].canDl)); return;
+  // Sadece gerçek dosyalar var (ZIP/GZ)
+  if(realFiles.length>0&&metaFiles.length===0){
+    if(realFiles.length===1){
+      // Tek dosya → doğrudan indir
+      await exportSingleFile(realFiles[0]);
+    } else {
+      // Birden fazla → ZIP paket oluştur ve paylaş/indir
+      await exportMultipleFiles(realFiles);
+    }
+    return;
   }
 
-  toast('📦 ZIP oluşturuluyor...');
-  const zip=new JSZip();
-  realFiles.forEach(f=>zip.file(f.path,f.blob));
-  const blob=await zip.generateAsync({type:'blob',compression:'DEFLATE'});
-  triggerDL(blob,'secilen_dosyalar.zip');
-  toast('✅ '+realFiles.length+' dosya indirildi');
+  // RAR/7Z meta dosyaları seçili — gerçek içerik yok, uyar
+  showExportModal(metaFiles, realFiles);
 }
 
-async function dlSelectedAsFolder(idxList){
-  toast('📁 Seçilenler klasör yapısıyla kaydediliyor...');
-  const zip=new JSZip();
-  let added=0;
-  for(const i of idxList){
-    const f=extractedFiles[i];
-    if(!f||f.isDir) continue;
-    if(f.blob&&f.canDl){
-      zip.file(f.path,f.blob); added++;
-    } else {
-      // Meta-only: dosyanın orijinal uzantısını koru, boş dosya ekle
-      zip.file(f.path, new Blob([''])); added++;
+// Tek dosyayı Web Share API ile paylaş (iOS Dosyalar'a kaydet)
+async function exportSingleFile(f){
+  setProgress(50,'Dışa aktarılıyor...','50%');
+  // Web Share API — iOS'ta "Dosyalar'a Kaydet" seçeneği çıkar
+  if(navigator.share && navigator.canShare){
+    try{
+      const shareFile=new File([f.blob], f.name, {type: f.blob.type||getMimeType(f.name)});
+      const canShare=navigator.canShare({files:[shareFile]});
+      if(canShare){
+        await navigator.share({files:[shareFile], title: f.name});
+        setProgress(100,'Tamamlandı','100%');
+        toast('✅ Dışa aktarıldı: '+f.name);
+        return;
+      }
+    }catch(e){
+      if(e.name==='AbortError'){toast('İptal edildi');return;}
+      // Share başarısız, normal indirmeye geç
     }
   }
-  const blob=await zip.generateAsync({type:'blob',compression:'DEFLATE'});
-  triggerDL(blob,'secilen_klasor.zip');
-  toast('✅ '+added+' dosya klasör yapısıyla kaydedildi');
+  // Fallback: normal indirme
+  triggerDL(f.blob, f.name);
+  setProgress(100,'Tamamlandı','100%');
+  toast('⬇ İndiriliyor: '+f.name);
 }
-/* ══ DOWNLOAD AS FOLDER (klasör yapısıyla ZIP) ══ */
-async function dlAsFolder(){
-  const allFiles = extractedFiles.filter(f => !f.isDir);
-  if(!allFiles.length){ toast('⚠ Dosya listesi boş'); return; }
 
-  toast('📁 Klasör yapısı oluşturuluyor...');
-  const zip = new JSZip();
-  let added = 0;
-
-  for(const f of allFiles){
-    if(f.blob && f.canDl){
-      // Gerçek dosya verisi — tam path ile ekle
-      zip.file(f.path, f.blob);
-    } else {
-      // Meta-only (RAR/7Z): orijinal uzantıyı koru, boş dosya ekle
-      // iOS'ta izin hatası vermesin diye placeholder TXT KULLANMA
-      zip.file(f.path, new Blob(['']));
-    }
-    added++;
-    const pct=Math.round(added/allFiles.length*50);
-    setProgress(pct, added+'/'+allFiles.length+' eklendi', pct+'%');
+// Birden fazla dosyayı ZIP'e koy, paylaş/indir
+async function exportMultipleFiles(files){
+  showStat('proc');
+  setProgress(0,'ZIP oluşturuluyor...','0%');
+  const zip=new JSZip();
+  let done=0;
+  for(const f of files){
+    zip.file(f.path, f.blob);
+    done++;
+    setProgress(Math.round(done/files.length*60), done+'/'+files.length+' eklendi', Math.round(done/files.length*60)+'%');
   }
-
-  if(!added){ toast('⚠ Eklenecek dosya yok'); return; }
-
-  const baseName = currentFile ? currentFile.name.replace(/\.[^.]+$/,'') : 'arsiv';
-  const zipName = baseName + '_klasor.zip';
-
-  const blob = await zip.generateAsync({
+  const blob=await zip.generateAsync({
     type:'blob', compression:'DEFLATE', compressionOptions:{level:6},
-    onUpdate: m => {
-      const pct=50+Math.round(m.percent*.5);
-      setProgress(pct, 'ZIP oluşturuluyor...', pct+'%');
-    }
+    onUpdate:m=>{const p=60+Math.round(m.percent*.4);setProgress(p,'Sıkıştırılıyor...',p+'%');}
   });
+  const baseName=currentFile?currentFile.name.replace(/\.[^.]+$/,''):'dosyalar';
+  const zipName=baseName+'_secilen.zip';
+  setProgress(100,'Tamamlandı','100%');
 
+  // Web Share API dene
+  if(navigator.share&&navigator.canShare){
+    try{
+      const shareFile=new File([blob], zipName, {type:'application/zip'});
+      if(navigator.canShare({files:[shareFile]})){
+        await navigator.share({files:[shareFile], title:zipName});
+        toast('✅ '+files.length+' dosya dışa aktarıldı');
+        return;
+      }
+    }catch(e){
+      if(e.name==='AbortError'){toast('İptal edildi');return;}
+    }
+  }
+  // Fallback
   triggerDL(blob, zipName);
-  toast('✅ '+zipName+' — '+added+' dosya, klasör yapısı korundu');
+  toast('⬇ '+zipName+' indiriliyor ('+files.length+' dosya)');
 }
 
 async function dlAll(){
   const files=extractedFiles.filter(f=>!f.isDir&&f.blob&&f.canDl);
   if(!files.length){
-    // Hiç indirilebilir dosya yoksa klasör yapısıyla kaydet
-    await dlAsFolder(); return;
+    // RAR/7Z — meta only, export modal göster
+    showExportModal(extractedFiles.filter(f=>!f.isDir&&f.metaOnly),[]);
+    return;
   }
-  toast('📦 Paketleniyor...');const zip=new JSZip();
-  files.forEach(f=>zip.file(f.path,f.blob));
-  const blob=await zip.generateAsync({type:'blob',compression:'DEFLATE',onUpdate:m=>setProgress(m.percent,'ZIP oluşturuluyor...',Math.round(m.percent)+'%')});
-  triggerDL(blob,(currentFile?currentFile.name.split('.')[0]:'arsiv')+'_cikartildi.zip');
-  toast('✅ Tüm dosyalar indirildi!');
+  // Tümünü seç ve export et
+  document.querySelectorAll('.file-cb').forEach(cb=>{cb.checked=true;cb.closest('.file-item').classList.add('selected');});
+  updateSelectionUI();
+  await exportMultipleFiles(files);
 }
+
+// ── RAR/7Z meta için export uyarı modalı
+function showExportModal(metaFiles, realFiles){
+  document.getElementById('expOverlay').classList.add('show');
+  const list=document.getElementById('expFileList');
+  const allShow=[...metaFiles,...realFiles].slice(0,12);
+  list.innerHTML=allShow.map(f=>
+    `<div class="exp-file-row">
+      <span class="exp-file-icon">${getIcon(f.name)}</span>
+      <span class="exp-file-name">${f.path}</span>
+      <span class="exp-file-size">${fmtSize(f.size)}</span>
+     </div>`
+  ).join('')+(metaFiles.length+realFiles.length>12?`<div style="text-align:center;padding:8px;color:var(--muted);font-size:11px;font-family:Space Mono,monospace">... ve ${metaFiles.length+realFiles.length-12} dosya daha</div>`:'');
+  document.getElementById('expCount').textContent=(metaFiles.length+realFiles.length)+' dosya seçili';
+}
+function closeExpModal(){document.getElementById('expOverlay').classList.remove('show');}
+
 
 /* ══ BAR STATS ══ */
 function updateBarStats(){
@@ -1403,7 +1494,7 @@ async function startCompress(){
 
     if(usePw){
       // Şifre bilgi dosyası ekle (orijinal zip şifrelemesi iOS'ta çalışmaz)
-      const hint='[S-Zip Pro Şifre Koruması]\n\nBu arşiv için şifre: '+pw+'\n\nNot: Standart ZIP şifrelemesi bazı uygulamalarda (iOS Dosyalar) atlanabilir.\nDaha güçlü şifreleme için 7-Zip ile AES-256 kullanın.\n\n© sebasmobil — S-Zip Pro 1.0.03';
+      const hint='[S-Zip Pro Şifre Koruması]\n\nBu arşiv için şifre: '+pw+'\n\nNot: Standart ZIP şifrelemesi bazı uygulamalarda (iOS Dosyalar) atlanabilir.\nDaha güçlü şifreleme için 7-Zip ile AES-256 kullanın.\n\n© sebasmobil — S-Zip Pro 1.0.04';
       zip.file('_SIFRE_BILGISI.txt', hint);
     }
 
@@ -1447,6 +1538,11 @@ async function startCompress(){
 }
 
 /* ══ UTILS ══ */
+function getMimeType(name){
+  const e=(name||'').split('.').pop().toLowerCase();
+  const m={pdf:'application/pdf',doc:'application/msword',docx:'application/vnd.openxmlformats-officedocument.wordprocessingml.document',xls:'application/vnd.ms-excel',xlsx:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',ppt:'application/vnd.ms-powerpoint',pptx:'application/vnd.openxmlformats-officedocument.presentationml.presentation',jpg:'image/jpeg',jpeg:'image/jpeg',png:'image/png',gif:'image/gif',svg:'image/svg+xml',webp:'image/webp',mp4:'video/mp4',mp3:'audio/mpeg',wav:'audio/wav',zip:'application/zip',txt:'text/plain',html:'text/html',css:'text/css',js:'text/javascript',json:'application/json',xml:'application/xml'};
+  return m[e]||'application/octet-stream';
+}
 function triggerDL(blob,name){const url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download=name;document.body.appendChild(a);a.click();document.body.removeChild(a);setTimeout(()=>URL.revokeObjectURL(url),10000);}
 function fmtSize(b){if(!b)return'0 B';const k=1024,s=['B','KB','MB','GB'],i=Math.floor(Math.log(b)/Math.log(k));return parseFloat((b/Math.pow(k,i)).toFixed(1))+' '+s[i];}
 function getIcon(name){const e=(name||'').split('.').pop().toLowerCase();const m={pdf:'📄',doc:'📝',docx:'📝',txt:'📃',md:'📋',jpg:'🖼',jpeg:'🖼',png:'🖼',gif:'🖼',svg:'🎨',webp:'🖼',mp4:'🎬',avi:'🎬',mkv:'🎬',mov:'🎬',mp3:'🎵',wav:'🎵',flac:'🎵',ogg:'🎵',html:'🌐',css:'🎨',js:'⚡',ts:'⚡',jsx:'⚛',tsx:'⚛',py:'🐍',java:'☕',cpp:'⚙',c:'⚙',go:'🔵',rs:'🦀',zip:'📦',rar:'📦','7z':'📦',tar:'📦',exe:'⚙',sh:'📜',bat:'📜',json:'🔧',xml:'🔧',yaml:'🔧',yml:'🔧',xls:'📊',xlsx:'📊',csv:'📊',ppt:'📊',pptx:'📊',db:'🗄',sql:'🗄',ttf:'🔤',otf:'🔤',woff:'🔤'};return m[e]||'📄';}
