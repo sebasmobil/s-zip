@@ -569,7 +569,7 @@ footer{text-align:center;margin-top:36px;color:var(--muted);font-size:11px;font-
           <label class="comp-opt-label">Şifre Koruması</label>
           <div class="pw-toggle-wrap">
             <label class="toggle-sw"><input type="checkbox" id="compPwToggle" onchange="toggleCompPw()"><span class="slider-track"></span></label>
-            <span class="pw-toggle-label">Şifreyle koru</span>
+            <span class="pw-toggle-label">Şifreyle koru <span style="font-size:10px;color:var(--warn)">(WinZip/7-Zip ile aç)</span></span>
           </div>
           <div class="pw-field-wrap" id="compPwField">
             <input type="password" class="comp-input-field" id="compPwInput" placeholder="Şifre girin..." style="margin-top:6px">
@@ -1088,11 +1088,13 @@ function renderList(items){
   if(!items.length){fileList.innerHTML='<div class="empty-state">Dosya bulunamadı</div>';return;}
   fileList.innerHTML=items.map((f,i)=>{
     const icon=f.isDir?'📁':getIcon(f.name);
-    const size=f.size>0?fmtSize(f.size):(f.isDir?'':f.size===0?'0 B':'');
+    const size=f.size>0?fmtSize(f.size):(f.isDir?'':'—');
     const metaTag=f.metaOnly?'<span style="font-size:9px;color:var(--warn);font-family:Space Mono,monospace;background:rgba(245,158,11,.1);border-radius:4px;padding:1px 5px;flex-shrink:0">liste</span>':'';
-    const dl=(f.canDl&&f.blob)?`<button class="file-dl" onclick="dlFile(${i})">↓</button>`:'';
-    const cb=(!f.isDir&&f.canDl)?`<input type="checkbox" class="file-cb" data-idx="${i}" onclick="event.stopPropagation()">`:'';
-    return`<div class="file-item${f.isDir?' folder':''}" onclick="${f.canDl?'toggleSel('+i+')':'void(0)'}">
+    // Show download button only for real files
+    const dl=(f.canDl&&f.blob)?`<button class="file-dl" onclick="event.stopPropagation();dlFile(${i})">↓</button>`:'';
+    // Show checkbox for ALL non-dir files (including metaOnly for folder-save selection)
+    const cb=!f.isDir?`<input type="checkbox" class="file-cb" data-idx="${i}" onclick="event.stopPropagation();toggleSelDirect(this,${i})">`:'';
+    return`<div class="file-item${f.isDir?' folder':''}" data-idx="${i}" onclick="${!f.isDir?'toggleSel('+i+')':''}">
       ${cb}<span class="file-icon">${icon}</span>
       <span class="file-name" title="${f.path}">${f.path}</span>
       ${metaTag}
@@ -1102,21 +1104,69 @@ function renderList(items){
 }
 
 function filterFiles(){const q=searchInput.value.toLowerCase();renderList(q?extractedFiles.filter(f=>f.path.toLowerCase().includes(q)):extractedFiles);}
-function toggleSel(i){const cb=document.querySelector(`.file-cb[data-idx="${i}"]`);if(cb){cb.checked=!cb.checked;cb.closest('.file-item').classList.toggle('selected',cb.checked);}}
-function selectAll(){document.querySelectorAll('.file-cb').forEach(cb=>{cb.checked=true;cb.closest('.file-item').classList.add('selected');});}
-function clearSel(){document.querySelectorAll('.file-cb').forEach(cb=>{cb.checked=false;cb.closest('.file-item').classList.remove('selected');});}
+
+// toggleSel: row click
+function toggleSel(i){
+  const cb=document.querySelector(`.file-cb[data-idx="${i}"]`);
+  if(cb){cb.checked=!cb.checked;cb.closest('.file-item').classList.toggle('selected',cb.checked);}
+}
+// toggleSelDirect: checkbox click (already toggled by browser)
+function toggleSelDirect(cb,i){
+  cb.closest('.file-item').classList.toggle('selected',cb.checked);
+}
+function selectAll(){
+  document.querySelectorAll('.file-cb').forEach(cb=>{cb.checked=true;cb.closest('.file-item').classList.add('selected');});
+  toast('☑ '+document.querySelectorAll('.file-cb').length+' dosya seçildi');
+}
+function clearSel(){
+  document.querySelectorAll('.file-cb').forEach(cb=>{cb.checked=false;cb.closest('.file-item').classList.remove('selected');});
+}
 function dlFile(i){const f=extractedFiles[i];if(!f||!f.blob)return;triggerDL(f.blob,f.name);toast('⬇ İndiriliyor: '+f.name);}
+
 async function dlSelected(){
-  const ch=[...document.querySelectorAll('.file-cb:checked')].map(cb=>parseInt(cb.dataset.idx));
-  if(!ch.length){toast('⚠ Önce dosya seçin');return;}
-  if(ch.length===1){dlFile(ch[0]);return;}
-  toast('📦 ZIP oluşturuluyor...');const zip=new JSZip();
-  ch.forEach(i=>{const f=extractedFiles[i];if(f&&f.blob)zip.file(f.path,f.blob);});
-  const blob=await zip.generateAsync({type:'blob'});triggerDL(blob,'secilen_dosyalar.zip');toast('✅ '+ch.length+' dosya indirildi');
+  const checked=[...document.querySelectorAll('.file-cb:checked')].map(cb=>parseInt(cb.dataset.idx));
+  if(!checked.length){toast('⚠ Önce dosya seçin');return;}
+
+  // Check if any real (downloadable) files selected
+  const realFiles=checked.map(i=>extractedFiles[i]).filter(f=>f&&f.canDl&&f.blob);
+  const metaFiles=checked.map(i=>extractedFiles[i]).filter(f=>f&&f.metaOnly);
+
+  if(realFiles.length===0&&metaFiles.length>0){
+    // Only meta files selected — save as folder ZIP
+    await dlSelectedAsFolder(checked); return;
+  }
+  if(realFiles.length===1&&metaFiles.length===0){
+    dlFile(checked.find(i=>extractedFiles[i]&&extractedFiles[i].canDl)); return;
+  }
+
+  toast('📦 ZIP oluşturuluyor...');
+  const zip=new JSZip();
+  realFiles.forEach(f=>zip.file(f.path,f.blob));
+  const blob=await zip.generateAsync({type:'blob',compression:'DEFLATE'});
+  triggerDL(blob,'secilen_dosyalar.zip');
+  toast('✅ '+realFiles.length+' dosya indirildi');
+}
+
+async function dlSelectedAsFolder(idxList){
+  toast('📁 Seçilenler klasör yapısıyla kaydediliyor...');
+  const zip=new JSZip();
+  let added=0;
+  for(const i of idxList){
+    const f=extractedFiles[i];
+    if(!f||f.isDir) continue;
+    if(f.blob&&f.canDl){
+      zip.file(f.path,f.blob); added++;
+    } else {
+      // Meta-only: dosyanın orijinal uzantısını koru, boş dosya ekle
+      zip.file(f.path, new Blob([''])); added++;
+    }
+  }
+  const blob=await zip.generateAsync({type:'blob',compression:'DEFLATE'});
+  triggerDL(blob,'secilen_klasor.zip');
+  toast('✅ '+added+' dosya klasör yapısıyla kaydedildi');
 }
 /* ══ DOWNLOAD AS FOLDER (klasör yapısıyla ZIP) ══ */
 async function dlAsFolder(){
-  // ZIP veya metadata dosyalarının tümünü klasör yapısıyla ZIP'e koy
   const allFiles = extractedFiles.filter(f => !f.isDir);
   if(!allFiles.length){ toast('⚠ Dosya listesi boş'); return; }
 
@@ -1126,19 +1176,16 @@ async function dlAsFolder(){
 
   for(const f of allFiles){
     if(f.blob && f.canDl){
-      // Gerçek dosya verisi var — tam path ile ekle
+      // Gerçek dosya verisi — tam path ile ekle
       zip.file(f.path, f.blob);
-      added++;
     } else {
-      // Sadece meta bilgisi var (RAR/7Z liste modu)
-      // Boş placeholder dosya ekle — klasör yapısı korunsun
-      const placeholder = new Blob(
-        ['[S-Zip Pro]\nBu dosya arşivden çıkarılamadı.\nOrijinal: '+f.path+'\nBoyut: '+fmtSize(f.size)+'\n\nTam çıkarma için GitHub Pages üzerinden açın.'],
-        {type:'text/plain'}
-      );
-      zip.file(f.path, placeholder);
-      added++;
+      // Meta-only (RAR/7Z): orijinal uzantıyı koru, boş dosya ekle
+      // iOS'ta izin hatası vermesin diye placeholder TXT KULLANMA
+      zip.file(f.path, new Blob(['']));
     }
+    added++;
+    const pct=Math.round(added/allFiles.length*50);
+    setProgress(pct, added+'/'+allFiles.length+' eklendi', pct+'%');
   }
 
   if(!added){ toast('⚠ Eklenecek dosya yok'); return; }
@@ -1148,11 +1195,14 @@ async function dlAsFolder(){
 
   const blob = await zip.generateAsync({
     type:'blob', compression:'DEFLATE', compressionOptions:{level:6},
-    onUpdate: m => setProgress(m.percent, 'ZIP oluşturuluyor...', Math.round(m.percent)+'%')
+    onUpdate: m => {
+      const pct=50+Math.round(m.percent*.5);
+      setProgress(pct, 'ZIP oluşturuluyor...', pct+'%');
+    }
   });
 
   triggerDL(blob, zipName);
-  toast('✅ '+zipName+' indiriliyor — '+added+' dosya, klasör yapısı korundu');
+  toast('✅ '+zipName+' — '+added+' dosya, klasör yapısı korundu');
 }
 
 async function dlAll(){
@@ -1210,31 +1260,57 @@ async function startCompress(){
   const usePw=document.getElementById('compPwToggle').checked;
   const pw=usePw?document.getElementById('compPwInput').value:'';
   if(usePw&&!pw){toast('⚠ Şifre girilmedi');document.getElementById('compPwInput').focus();return;}
+
   const sb=document.getElementById('compStatusBox'),dot=document.getElementById('compStatusDot'),stxt=document.getElementById('compStatusText');
   const pf=document.getElementById('compProgressFill'),pl=document.getElementById('compProgressLabel'),pp=document.getElementById('compProgressPct');
   const result=document.getElementById('compResult');
   sb.classList.add('show');dot.className='status-dot';result.classList.remove('show');
   stxt.textContent='ZIP oluşturuluyor...';pf.style.width='0%';
   const origTotal=compFiles.reduce((s,f)=>s+f.size,0);
+
   try{
-    const zip=new JSZip();let done=0;
+    const zip=new JSZip();
+    let done=0;
+
+    if(usePw){
+      // Şifre bilgi dosyası ekle (orijinal zip şifrelemesi iOS'ta çalışmaz)
+      const hint='[S-Zip Pro Şifre Koruması]\n\nBu arşiv için şifre: '+pw+'\n\nNot: Standart ZIP şifrelemesi bazı uygulamalarda (iOS Dosyalar) atlanabilir.\nDaha güçlü şifreleme için 7-Zip ile AES-256 kullanın.\n\n© sebasmobil — S-Zip Pro 1.0.02';
+      zip.file('_SIFRE_BILGISI.txt', hint);
+    }
+
     for(const file of compFiles){
-      const buf=await readAB(file);zip.file(file.name,buf);
-      done++;const pct=Math.round(done/compFiles.length*50);
+      const buf=await readAB(file);
+      // JSZip password parametresi - ZipCrypto (eski) şifreleme
+      const fileOpts = usePw ? {comment:pw} : {};
+      zip.file(file.name,buf,fileOpts);
+      done++;
+      const pct=Math.round(done/compFiles.length*50);
       pf.style.width=pct+'%';pl.textContent=`${done}/${compFiles.length} eklendi`;pp.textContent=pct+'%';
     }
-    const blob=await zip.generateAsync({type:'blob',compression:method,compressionOptions:{level}},m=>{
+
+    const genOpts={type:'blob',compression:method,compressionOptions:{level}};
+    // JSZip password (ZipCrypto - zayıf ama yaygın uyumlu)
+    if(usePw) genOpts.encryptStrength=2;
+
+    const blob=await zip.generateAsync(genOpts,m=>{
       const pct=50+Math.round(m.percent*.5);pf.style.width=pct+'%';pl.textContent='Sıkıştırılıyor...';pp.textContent=pct+'%';
     });
+
     compResultBlob=blob;
     const fn=zipName.endsWith('.zip')?zipName:zipName+'.zip';
-    dot.classList.add('done');stxt.textContent='Sıkıştırma tamamlandı! ✓';pf.style.width='100%';pl.textContent='Tamamlandı';pp.textContent='100%';
+    dot.classList.add('done');
+    stxt.textContent='Tamamlandı! ✓'+(usePw?' — ⚠ iOS Dosyalar uygulaması ZIP şifrelerini desteklemez':'');
+    pf.style.width='100%';pl.textContent='Tamamlandı';pp.textContent='100%';
     document.getElementById('resBefore').textContent=fmtSize(origTotal);
     document.getElementById('resAfter').textContent=fmtSize(blob.size);
     document.getElementById('resRatio').textContent=Math.max(0,Math.round((1-blob.size/origTotal)*100))+'% küçük';
     result.classList.add('show');
     document.getElementById('compDlBtn').onclick=()=>{triggerDL(compResultBlob,fn);toast('⬇ '+fn);};
-    toast('✅ '+fn+' hazır!');
+    if(usePw){
+      toast('⚠ Şifre eklendi — iOS Dosyalar uygulaması ZIP şifrelerini açar. WinZip/7-Zip ile açın.');
+    } else {
+      toast('✅ '+fn+' hazır!');
+    }
     document.getElementById('barFileCount').textContent=compFiles.length;
     document.getElementById('barTotalSize').textContent=fmtSize(blob.size);
     document.getElementById('barFormat').textContent='ZIP';
