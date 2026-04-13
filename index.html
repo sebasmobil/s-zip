@@ -3,9 +3,33 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>S-Zip Pro — Arşiv Çıkarıcı & Sıkıştırıcı</title>
+<title>S-Zip Pro 1.0</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/libarchive.js@1.3.0/dist/libarchive.js"></script>
+<!-- libarchive.js - RAR, 7z, tar, bz2, xz desteği için -->
+<script>
+// libarchive.js'yi dinamik olarak yükle ve hazır olunca init et
+(function(){
+  var s = document.createElement('script');
+  s.src = 'https://cdn.jsdelivr.net/npm/libarchive.js@1.3.0/dist/libarchive.js';
+  s.onload = function(){
+    try {
+      Archive.init({
+        workerUrl: 'https://cdn.jsdelivr.net/npm/libarchive.js@1.3.0/dist/worker-bundle.js'
+      });
+      window._archiveReady = true;
+      console.log('[S-Zip] libarchive.js hazır');
+    } catch(e) {
+      console.warn('[S-Zip] libarchive.js init hatası:', e);
+      window._archiveReady = false;
+    }
+  };
+  s.onerror = function(){
+    console.warn('[S-Zip] libarchive.js yüklenemedi');
+    window._archiveReady = false;
+  };
+  document.head.appendChild(s);
+})();
+</script>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,700&display=swap');
 
@@ -521,7 +545,14 @@ footer{text-align:center;margin-top:36px;color:var(--muted);font-size:11px;font-
       <div class="drop-title">Arşiv dosyasını buraya bırak</div>
       <div class="drop-sub">veya bilgisayarından seç<br><strong>ZIP, RAR, 7Z, TAR, GZ, BZ2, XZ, TGZ</strong> desteklenir</div>
       <button class="browse-btn" onclick="document.getElementById('fileInput').click()">📁 Dosya Seç</button>
-      <input type="file" id="fileInput" accept=".zip,.rar,.7z,.tar,.gz,.bz2,.xz,.tgz,.tar.gz,.tar.bz2,.tar.xz">
+      <input type="file" id="fileInput" accept=".zip,.rar,.7z,.tar,.gz,.bz2,.xz,.tgz,.tar.gz,.tar.bz2,.tar.xz,application/x-rar-compressed,application/vnd.rar,application/x-7z-compressed,application/gzip,application/x-tar">
+    </div>
+
+    <!-- RAR/7Z uyarısı -->
+    <div id="libNotice" style="display:none;background:rgba(245,158,11,.07);border:1px solid rgba(245,158,11,.25);border-radius:12px;padding:14px 18px;margin-bottom:18px;font-size:12px;color:var(--warn);font-family:'Space Mono',monospace;line-height:1.7">
+      ⚠️ <strong>RAR / 7Z / TAR için not:</strong> Bu formatlar için libarchive.js kütüphanesi gereklidir.<br>
+      İlk kullanımda internet bağlantısıyla ~2MB kütüphane indirilir, sonrasında çevrimdışı çalışır.<br>
+      <span id="libStatus">🔄 Kütüphane yükleniyor...</span>
     </div>
 
     <div class="status-box" id="statusBox">
@@ -818,13 +849,63 @@ async function processFile(file){
   }
 }
 
-function getExt(name){
-  const n=name.toLowerCase();
-  if(n.endsWith('.tar.gz')||n.endsWith('.tgz'))return 'tar.gz';
-  if(n.endsWith('.tar.bz2'))return 'tar.bz2';
-  if(n.endsWith('.tar.xz'))return 'tar.xz';
-  return n.split('.').pop();
+async function processFile(file){
+  currentFile=file;_lastFile=file;extractedFiles=[];fileTree.classList.remove('show');searchInput.value='';
+
+  showStat('proc');setProgress(0,'Dosya türü belirleniyor...','0%');
+
+  // Magic byte ile gerçek format tespiti
+  let fmt;
+  try { fmt = await detectFormat(file); }
+  catch(e){ fmt = getExtFmt(file.name); }
+
+  setStatusText('İşleniyor: '+fmt.toUpperCase());
+
+  try{
+    if(fmt==='zip') await handleZip(file);
+    else await handleLibarchive(file);
+    showStat('done');renderFileTree(file.name);
+    updateBarStats();
+  }catch(err){
+    showStat('err');setStatusText('Hata: '+err.message);
+    showError(err,'"'+file.name+'" dosyası açılırken hata oluştu.',()=>processFile(file));
+  }
 }
+
+// Magic byte ile format tespiti (uzantıya güvenmez)
+async function detectFormat(file){
+  const buf = await file.slice(0, 8).arrayBuffer();
+  const b = new Uint8Array(buf);
+
+  // ZIP: PK (50 4B 03 04) veya PK empty (50 4B 05 06)
+  if(b[0]===0x50&&b[1]===0x4B) return 'zip';
+  // RAR4: Rar! (52 61 72 21 1A 07 00)
+  if(b[0]===0x52&&b[1]===0x61&&b[2]===0x72&&b[3]===0x21&&b[4]===0x1A&&b[5]===0x07) return 'rar';
+  // RAR5: Rar! (52 61 72 21 1A 07 01 00)
+  if(b[0]===0x52&&b[1]===0x61&&b[2]===0x72&&b[3]===0x21&&b[4]===0x1A&&b[5]===0x07&&b[6]===0x01) return 'rar';
+  // 7z: 7z¼¯' (37 7A BC AF 27 1C)
+  if(b[0]===0x37&&b[1]===0x7A&&b[2]===0xBC&&b[3]===0xAF) return '7z';
+  // GZ: (1F 8B)
+  if(b[0]===0x1F&&b[1]===0x8B) return 'gz';
+  // BZ2: BZh (42 5A 68)
+  if(b[0]===0x42&&b[1]===0x5A&&b[2]===0x68) return 'bz2';
+  // XZ: (FD 37 7A 58 5A 00)
+  if(b[0]===0xFD&&b[1]===0x37&&b[2]===0x7A) return 'xz';
+  // TAR: ustar at offset 257 — check extension fallback
+  return getExtFmt(file.name);
+}
+
+function getExtFmt(name){
+  const n=name.toLowerCase();
+  if(n.endsWith('.tar.gz')||n.endsWith('.tgz')) return 'gz';
+  if(n.endsWith('.tar.bz2')) return 'bz2';
+  if(n.endsWith('.tar.xz')) return 'xz';
+  const ext=n.split('.').pop();
+  return ext||'unknown';
+}
+
+// Eski getExt - geriye uyumluluk için
+function getExt(name){ return getExtFmt(name); }
 
 async function handleZip(file){
   const buf=await readAB(file);let zip;
@@ -840,11 +921,108 @@ async function handleZip(file){
 }
 
 async function handleLibarchive(file){
-  setProgress(10,'Kütüphane yükleniyor...','10%');
-  if(typeof Archive==='undefined')throw new Error('libarchive.js yüklenemedi. İnternet bağlantınızı kontrol edin (ilk yükleme için gerekli).');
-  const archive=await Archive.open(file);setProgress(30,'Arşiv açılıyor...','30%');
-  let obj;try{obj=await archive.extractFiles();}catch(e){throw new Error('Arşiv açılamadı: '+e.message);}
-  setProgress(60,'Dosyalar okunuyor...','60%');flattenObj(obj,'');setProgress(100,'Tamamlandı','100%');
+  setProgress(5,'Kütüphane bekleniyor...','5%');
+
+  // libarchive.js'nin yüklenmesini bekle (max 8 saniye)
+  await waitForArchive(8000);
+
+  if(typeof Archive==='undefined' || !window._archiveReady){
+    throw new Error(
+      'libarchive.js yüklenemedi.\n\n' +
+      'Çözüm: Uygulamayı GitHub Pages üzerinden açın ve internet bağlantınızı kontrol edin.\n' +
+      'İlk açılışta CDN\'den ~2MB kütüphane indirilmesi gerekir.'
+    );
+  }
+
+  setProgress(15,'Arşiv açılıyor...','15%');
+
+  let archive;
+  try {
+    archive = await Archive.open(file);
+  } catch(e) {
+    throw new Error('Arşiv başlatılamadı: ' + e.message);
+  }
+
+  setProgress(25,'İçerik okunuyor...','25%');
+
+  // libarchive.js 1.3.x doğru API: getNextEntry döngüsü
+  let entry;
+  let entryCount = 0;
+  const allEntries = [];
+
+  try {
+    // Önce tüm entry'leri say (progress için)
+    let checkArchive = await Archive.open(file);
+    let hasSupport = false;
+    try {
+      // API varlığını kontrol et
+      if(typeof checkArchive.getNextEntry === 'function'){
+        hasSupport = true;
+      }
+    } catch(e){}
+
+    if(hasSupport){
+      // Modern API: getNextEntry
+      while((entry = await archive.getNextEntry()) !== false){
+        entryCount++;
+        const pathname = entry.pathname || entry.path || ('file_'+entryCount);
+        const isDir = entry.size === 0 && (pathname.endsWith('/') || entry.type === 5);
+
+        if(!isDir && entry.size > 0){
+          try {
+            const data = await archive.getData();
+            if(data){
+              const blob = new Blob([data]);
+              const name = pathname.split('/').filter(Boolean).pop() || pathname;
+              extractedFiles.push({name, path:pathname, size:blob.size, blob, isDir:false});
+            }
+          } catch(dataErr){
+            console.warn('[S-Zip] Dosya verisi alınamadı:', pathname, dataErr);
+          }
+        } else if(isDir){
+          const name = pathname.replace(/\/$/,'').split('/').pop() || pathname;
+          extractedFiles.push({name, path:pathname, size:0, blob:null, isDir:true});
+        }
+
+        const pct = Math.min(25 + entryCount * 3, 85);
+        setProgress(pct, entryCount + ' kayıt işlendi', pct+'%');
+      }
+    } else {
+      // Fallback: extractFiles() API
+      const obj = await archive.extractFiles();
+      setProgress(70,'Dosyalar işleniyor...','70%');
+      flattenObj(obj,'');
+    }
+  } catch(e) {
+    // extractFiles fallback
+    try {
+      const archive2 = await Archive.open(file);
+      const obj = await archive2.extractFiles();
+      flattenObj(obj,'');
+    } catch(e2){
+      throw new Error(
+        'Arşiv açılamadı: ' + e.message + '\n\n' +
+        'Bu format desteklenmiyor olabilir veya dosya bozuk.'
+      );
+    }
+  }
+
+  setProgress(100,'Tamamlandı','100%');
+}
+
+// libarchive hazır olana kadar bekle
+function waitForArchive(maxMs){
+  return new Promise(resolve=>{
+    if(typeof Archive!=='undefined' && window._archiveReady) return resolve();
+    const start = Date.now();
+    const timer = setInterval(()=>{
+      if(typeof Archive!=='undefined' && window._archiveReady){
+        clearInterval(timer); resolve();
+      } else if(Date.now()-start > maxMs){
+        clearInterval(timer); resolve(); // timeout, devam et (hata fırlatılacak)
+      }
+    }, 150);
+  });
 }
 
 function flattenObj(obj,prefix){
@@ -1041,8 +1219,32 @@ let _tt;
 function toast(msg){const el=document.getElementById('toast');el.textContent=msg;el.classList.add('show');clearTimeout(_tt);_tt=setTimeout(()=>el.classList.remove('show'),3200);}
 
 /* ── INIT ── */
-if(typeof Archive!=='undefined'){Archive.init({workerUrl:'https://cdn.jsdelivr.net/npm/libarchive.js@1.3.0/dist/worker-bundle.js'});}
-window.addEventListener('DOMContentLoaded',()=>{if(shouldShowChangelog())setTimeout(openChangelog,500);});
+// libarchive.js dinamik olarak yükleniyor (sayfa başında)
+// Archive.init() script onload içinde otomatik çağrılıyor
+window.addEventListener('DOMContentLoaded',()=>{
+  if(shouldShowChangelog())setTimeout(openChangelog,500);
+
+  // libarchive durum takibi
+  const notice = document.getElementById('libNotice');
+  const libStatus = document.getElementById('libStatus');
+  // Sadece ilk kez göster
+  notice.style.display = 'block';
+
+  let checkCount = 0;
+  const checker = setInterval(()=>{
+    checkCount++;
+    if(typeof Archive !== 'undefined' && window._archiveReady){
+      clearInterval(checker);
+      libStatus.textContent = '✅ Kütüphane hazır — RAR, 7Z, TAR destekleniyor';
+      libStatus.style.color = 'var(--success)';
+      setTimeout(()=>{ notice.style.display='none'; }, 3000);
+    } else if(checkCount > 60){ // 9 saniye
+      clearInterval(checker);
+      libStatus.textContent = '❌ Kütüphane yüklenemedi — ZIP işlemleri çalışmaya devam eder, RAR/7Z için internet bağlantısı gerekli';
+      libStatus.style.color = 'var(--danger)';
+    }
+  }, 150);
+});
 </script>
 </body>
 </html>
