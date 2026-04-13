@@ -3,9 +3,9 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>S-Zip Pro 1.0.02</title>
+<title>S-Zip Pro 1.0.03</title>
 <!--
-  S-Zip Pro 1.0.02
+  S-Zip Pro 1.0.03
   © sebasmobil
   GNU Affero General Public License Version 3 (GNU AGPL v3)
   https://www.gnu.org/licenses/agpl-3.0.html
@@ -319,7 +319,40 @@ footer{text-align:center;margin-top:36px;color:var(--muted);font-size:11px;font-
 .toast{position:fixed;bottom:72px;right:14px;background:var(--surface2);border:1px solid rgba(var(--acc-rgb),.4);border-radius:11px;padding:11px 16px;font-family:'Space Mono',monospace;font-size:12px;color:var(--text);transform:translateY(110px);opacity:0;transition:all .32s cubic-bezier(.34,1.56,.64,1);z-index:1000;max-width:280px;box-shadow:0 10px 36px var(--shadow)}
 .toast.show{transform:translateY(0);opacity:1}
 
-@media(max-width:560px){
+/* ── RAR GUIDE PANEL ── */
+.rar-guide{background:var(--surface);border:1px solid var(--border);border-radius:16px;overflow:hidden;margin-bottom:18px;display:none}
+.rar-guide.show{display:block}
+.rar-guide-header{padding:16px 20px;background:rgba(245,158,11,.07);border-bottom:1px solid rgba(245,158,11,.2);display:flex;align-items:center;gap:12px}
+.rar-guide-icon{font-size:28px;flex-shrink:0}
+.rar-guide-title{font-family:'Space Mono',monospace;font-size:14px;font-weight:700;color:var(--warn);margin-bottom:3px}
+.rar-guide-sub{font-size:12px;color:var(--muted);line-height:1.5}
+.rar-guide-body{padding:18px 20px}
+.rar-step-title{font-family:'Space Mono',monospace;font-size:11px;letter-spacing:1px;text-transform:uppercase;color:var(--muted);margin-bottom:12px}
+.rar-steps{display:flex;flex-direction:column;gap:10px;margin-bottom:18px}
+.rar-step{display:flex;align-items:flex-start;gap:12px;background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:12px 14px}
+.rar-step-num{width:24px;height:24px;border-radius:50%;flex-shrink:0;background:linear-gradient(135deg,var(--acc),var(--acc2));color:#000;font-family:'Space Mono',monospace;font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center;margin-top:1px}
+.rar-step-text{font-size:13px;color:var(--text2);line-height:1.55}
+.rar-step-text strong{color:var(--text);font-weight:600}
+.rar-apps{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:14px}
+.rar-app-btn{display:flex;align-items:center;gap:10px;background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:12px 14px;text-decoration:none;color:var(--text);transition:all .2s;cursor:pointer}
+.rar-app-btn:hover{border-color:var(--acc);background:rgba(var(--acc-rgb),.06);transform:translateY(-1px)}
+.rar-app-icon{font-size:22px;flex-shrink:0}
+.rar-app-name{font-family:'Space Mono',monospace;font-size:11px;font-weight:700;color:var(--text);margin-bottom:1px}
+.rar-app-desc{font-size:10px;color:var(--muted)}
+.rar-divider{display:flex;align-items:center;gap:10px;margin:14px 0;color:var(--muted);font-size:11px;font-family:'Space Mono',monospace}
+.rar-divider::before,.rar-divider::after{content:'';flex:1;height:1px;background:var(--border)}
+.rar-web-apps{display:flex;flex-direction:column;gap:7px;margin-bottom:14px}
+.rar-web-btn{display:flex;align-items:center;justify-content:space-between;background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:11px 14px;text-decoration:none;color:var(--text);transition:all .2s}
+.rar-web-btn:hover{border-color:var(--acc2);background:rgba(var(--acc2-rgb),.06)}
+.rar-web-left{display:flex;align-items:center;gap:10px}
+.rar-web-icon{font-size:18px;flex-shrink:0}
+.rar-web-name{font-family:'Space Mono',monospace;font-size:11px;font-weight:700;color:var(--text)}
+.rar-web-desc{font-size:10px;color:var(--muted);margin-top:1px}
+.rar-web-arrow{font-size:14px;color:var(--muted)}
+.rar-note{background:rgba(var(--acc-rgb),.06);border:1px solid rgba(var(--acc-rgb),.2);border-radius:10px;padding:12px 14px;font-size:12px;color:var(--text2);line-height:1.6;font-family:'Space Mono',monospace}
+.rar-note strong{color:var(--acc)}
+
+@media(max-width:400px){.rar-apps{grid-template-columns:1fr}}
   .tree-header{flex-direction:column;align-items:flex-start}
   .formats-grid{grid-template-columns:repeat(4,1fr)}
   .info-list{grid-template-columns:1fr}
@@ -337,13 +370,13 @@ footer{text-align:center;margin-top:36px;color:var(--muted);font-size:11px;font-
 <div class="cl-overlay" id="clOverlay">
   <div class="cl-modal">
     <div class="cl-header">
-      <div class="cl-header-top"><span class="cl-app-label">S-ZIP PRO</span><span class="cl-ver-badge">Pro 1.0.02</span></div>
+      <div class="cl-header-top"><span class="cl-app-label">S-ZIP PRO</span><span class="cl-ver-badge">Pro 1.0.03</span></div>
       <div class="cl-title">Yenilikler 🎉</div>
       <div class="cl-subtitle">Bu sürümde neler değişti — aşağı kaydır</div>
     </div>
     <div class="cl-body" id="clBody">
       <div class="cl-section">
-        <div class="cl-section-label new">✦ 1.0.02 — Yeni</div>
+        <div class="cl-section-label new">✦ 1.0.03 — Yeni</div>
         <div class="cl-item"><div class="cl-item-icon">📁</div><div><div class="cl-item-name">Klasör Yapısıyla Kaydetme</div><div class="cl-item-desc">Arşiv içindeki tüm dosyalar, orijinal klasör hiyerarşisi korunarak ZIP olarak paketlenip kaydedilebilir. RAR/7Z listesi için de çalışır.</div></div></div>
         <div class="cl-item"><div class="cl-item-icon">📂</div><div><div class="cl-item-name">Klasör Olarak İndir</div><div class="cl-item-desc">ZIP dosyalarında her klasör ayrı ayrı ZIP olarak da indirilebilir. Ağaç görünümünde klasör ikonuna tıklayın.</div></div></div>
         <div class="cl-item"><div class="cl-item-icon">⚖️</div><div><div class="cl-item-name">GNU AGPL v3 Lisansı</div><div class="cl-item-desc">S-Zip Pro artık GNU Affero General Public License Version 3 ile lisanslanmıştır. © sebasmobil</div></div></div>
@@ -422,7 +455,7 @@ footer{text-align:center;margin-top:36px;color:var(--muted);font-size:11px;font-
   <div class="topbar">
     <div class="topbar-left">
       <div class="app-icon">📦</div>
-      <div><div class="app-name">S-<span>Zip</span></div><span class="app-ver">PRO 1.0.02</span></div>
+      <div><div class="app-name">S-<span>Zip</span></div><span class="app-ver">PRO 1.0.03</span></div>
     </div>
     <div class="topbar-right">
       <div class="palette-wrap" title="Renk Teması">
@@ -480,6 +513,87 @@ footer{text-align:center;margin-top:36px;color:var(--muted);font-size:11px;font-
 
     <!-- Format bilgi notu -->
     <div class="fmt-notice" id="fmtNotice"></div>
+
+    <!-- RAR/7Z çıkarma kılavuzu -->
+    <div class="rar-guide" id="rarGuide">
+      <div class="rar-guide-header">
+        <div class="rar-guide-icon">🗜️</div>
+        <div>
+          <div class="rar-guide-title">RAR Dosyasını Nasıl Çıkarırsınız?</div>
+          <div class="rar-guide-sub" id="rarGuideFormat">RAR4 formatı tespit edildi</div>
+        </div>
+      </div>
+      <div class="rar-guide-body">
+
+        <div class="rar-step-title">📱 iPhone / iPad için (Ücretsiz Uygulamalar)</div>
+        <div class="rar-apps">
+          <a class="rar-app-btn" href="https://apps.apple.com/app/izip-zip-unzip-unrar-tool/id413971331" target="_blank">
+            <div class="rar-app-icon">📦</div>
+            <div><div class="rar-app-name">iZip</div><div class="rar-app-desc">RAR · ZIP · 7Z</div></div>
+          </a>
+          <a class="rar-app-btn" href="https://apps.apple.com/app/rar/id1160461961" target="_blank">
+            <div class="rar-app-icon">🗜️</div>
+            <div><div class="rar-app-name">RAR (WinRAR)</div><div class="rar-app-desc">Resmi uygulama</div></div>
+          </a>
+          <a class="rar-app-btn" href="https://apps.apple.com/app/documents-file-manager-docs/id364901807" target="_blank">
+            <div class="rar-app-icon">📄</div>
+            <div><div class="rar-app-name">Documents</div><div class="rar-app-desc">Readdle · Ücretsiz</div></div>
+          </a>
+          <a class="rar-app-btn" href="https://apps.apple.com/app/zarchiver/id1409496894" target="_blank">
+            <div class="rar-app-icon">⚡</div>
+            <div><div class="rar-app-name">ZArchiver</div><div class="rar-app-desc">Tüm formatlar</div></div>
+          </a>
+        </div>
+
+        <div class="rar-step-title">🌐 Tarayıcıda Çevrimiçi (Yükleme Gerekir)</div>
+        <div class="rar-web-apps">
+          <a class="rar-web-btn" href="https://extract.me" target="_blank">
+            <div class="rar-web-left">
+              <div class="rar-web-icon">🌍</div>
+              <div><div class="rar-web-name">extract.me</div><div class="rar-web-desc">RAR · 7Z · TAR · Ücretsiz</div></div>
+            </div>
+            <div class="rar-web-arrow">↗</div>
+          </a>
+          <a class="rar-web-btn" href="https://www.ezyzip.com/open-rar-file-online.html" target="_blank">
+            <div class="rar-web-left">
+              <div class="rar-web-icon">🔓</div>
+              <div><div class="rar-web-name">ezyzip.com</div><div class="rar-web-desc">RAR açma · Ücretsiz</div></div>
+            </div>
+            <div class="rar-web-arrow">↗</div>
+          </a>
+          <a class="rar-web-btn" href="https://unzip-online.com" target="_blank">
+            <div class="rar-web-left">
+              <div class="rar-web-icon">📂</div>
+              <div><div class="rar-web-name">unzip-online.com</div><div class="rar-web-desc">Çevrimiçi açma aracı</div></div>
+            </div>
+            <div class="rar-web-arrow">↗</div>
+          </a>
+        </div>
+
+        <div class="rar-step-title">🖥️ Bilgisayar için</div>
+        <div class="rar-steps">
+          <div class="rar-step">
+            <div class="rar-step-num">1</div>
+            <div class="rar-step-text"><strong>7-Zip</strong> indirin — <em>7-zip.org</em> (ücretsiz, açık kaynak)</div>
+          </div>
+          <div class="rar-step">
+            <div class="rar-step-num">2</div>
+            <div class="rar-step-text">RAR dosyasına <strong>sağ tıklayın</strong> → <strong>7-Zip → Buraya çıkar</strong></div>
+          </div>
+          <div class="rar-step">
+            <div class="rar-step-num">3</div>
+            <div class="rar-step-text">Tüm dosyalar <strong>klasör yapısıyla</strong> aynı konuma çıkarılır</div>
+          </div>
+        </div>
+
+        <div class="rar-note">
+          <strong>S-Zip Pro</strong> bu ortamda RAR içeriğini okuyabilmek için WebAssembly gerektirir.<br>
+          Yukarıdaki dosya listesi ve boyutlar doğrudur — dosyalar gerçekten mevcut.<br>
+          <strong>★ GitHub Pages'e yükleyince</strong> tam çıkarma desteği aktif olur.
+        </div>
+
+      </div>
+    </div>
 
     <div class="status-box" id="statusBox">
       <div class="status-header">
@@ -604,7 +718,7 @@ footer{text-align:center;margin-top:36px;color:var(--muted);font-size:11px;font-
     </div>
   </div><!-- /panelCompress -->
 
-  <footer>S-Zip Pro 1.0.02 — © sebasmobil — GNU AGPL v3</footer>
+  <footer>S-Zip Pro 1.0.03 — © sebasmobil — GNU AGPL v3</footer>
 </div><!-- /page -->
 
 <!-- BOTTOM BAR -->
@@ -612,7 +726,7 @@ footer{text-align:center;margin-top:36px;color:var(--muted);font-size:11px;font-
   <div class="bar-info-pill">
     <div class="bar-logo">📦</div>
     <div><div class="bar-appname">S-<span>Zip</span></div></div>
-    <span class="bar-ver-tag">Pro 1.0.02</span>
+    <span class="bar-ver-tag">Pro 1.0.03</span>
   </div>
   <div class="bar-center">
     <div class="bar-stat"><span class="bar-stat-val" id="barFileCount">—</span><span class="bar-stat-label">DOSYA</span></div>
@@ -636,7 +750,7 @@ footer{text-align:center;margin-top:36px;color:var(--muted);font-size:11px;font-
 'use strict';
 
 /*
- * S-Zip Pro 1.0.02
+ * S-Zip Pro 1.0.03
  * © sebasmobil
  * GNU Affero General Public License Version 3 (GNU AGPL v3)
  * https://www.gnu.org/licenses/agpl-3.0.html
@@ -655,7 +769,7 @@ function switchTab(t){['extract','compress'].forEach(id=>{const cap=id.charAt(0)
 function openMail(e){e.preventDefault();window.location.href='mailto:?subject='+encodeURIComponent('sebasmobil S-Zip İletişim');}
 
 /* ══ CHANGELOG ══ */
-const APP_VERSION='Pro_1.0.02',LS_CL='szip_cl';
+const APP_VERSION='Pro_1.0.03',LS_CL='szip_cl';
 function shouldShowChangelog(){try{const d=JSON.parse(localStorage.getItem(LS_CL)||'null');if(!d)return true;if(d.version!==APP_VERSION)return true;return!d.dontShow;}catch(e){return true;}}
 function saveCLPref(ds){try{localStorage.setItem(LS_CL,JSON.stringify({version:APP_VERSION,dontShow:ds}));}catch(e){}}
 function openChangelog(){document.getElementById('dontShowCb').checked=false;document.getElementById('clOverlay').classList.add('show');setTimeout(()=>{const b=document.getElementById('clBody'),h=document.getElementById('clScrollHint');h.classList.toggle('hidden',b.scrollHeight<=b.clientHeight+12);},120);}
@@ -679,7 +793,7 @@ function showError(err,subtitle,retryFn){
   document.getElementById('errOverlay').classList.add('show');
 }
 function closeErrModal(){document.getElementById('errOverlay').classList.remove('show');}
-function copyErrReport(){const r=['=== S-Zip Pro 1.0.02 Hata Raporu ===','Zaman: '+document.getElementById('errTime').textContent,'Tür: '+document.getElementById('errType').textContent,'Satır: '+document.getElementById('errLine').textContent,'Dosya: '+document.getElementById('errFile').textContent,'---',document.getElementById('errMessage').textContent].join('\n');navigator.clipboard.writeText(r).then(()=>toast('📋 Kopyalandı!')).catch(()=>toast('⚠ Kopyalama başarısız'));}
+function copyErrReport(){const r=['=== S-Zip Pro 1.0.03 Hata Raporu ===','Zaman: '+document.getElementById('errTime').textContent,'Tür: '+document.getElementById('errType').textContent,'Satır: '+document.getElementById('errLine').textContent,'Dosya: '+document.getElementById('errFile').textContent,'---',document.getElementById('errMessage').textContent].join('\n');navigator.clipboard.writeText(r).then(()=>toast('📋 Kopyalandı!')).catch(()=>toast('⚠ Kopyalama başarısız'));}
 function retryAction(){closeErrModal();if(_retryFn)setTimeout(_retryFn,200);else if(_lastFile)setTimeout(()=>processFile(_lastFile),200);else window.location.reload();}
 window.addEventListener('error',e=>showError(e.error||new Error(e.message),'Beklenmeyen JavaScript hatası.'));
 window.addEventListener('unhandledrejection',e=>showError(e.reason instanceof Error?e.reason:new Error(String(e.reason)),'İşlenmemiş Promise hatası.'));
@@ -736,6 +850,7 @@ async function processFile(file){
   currentFile=file;_lastFile=file;extractedFiles=[];
   fileTree.classList.remove('show');searchInput.value='';
   fmtNotice.className='fmt-notice';
+  document.getElementById('rarGuide').classList.remove('show');
 
   showStat('proc');setProgress(0,'Format belirleniyor...','0%');
 
@@ -760,11 +875,13 @@ async function processFile(file){
       document.getElementById('btnDlFolder').style.display='';
     }
     else if(fmt==='rar4'||fmt==='rar5'){
-      showNotice('warn','🗜️ RAR formatı tespit edildi ('+(fmt==='rar5'?'RAR5':'RAR4')+').\n\nDosya listesi ve klasör yapısı gösteriliyor. "📁 Klasör Yapısıyla Kaydet" butonu ile tüm yapıyı ZIP olarak kaydedebilirsiniz.\n\n★ GitHub Pages\'e yüklerseniz gerçek dosya içerikleri de çıkarılabilir.');
       await handleRarHeader(file);
       document.getElementById('btnDlSelected').style.display='none';
       document.getElementById('btnDlAll').style.display='none';
       document.getElementById('btnDlFolder').style.display='';
+
+      // RAR için özel yönlendirme paneli göster
+      showRarGuide(file, fmt);
     }
     else if(fmt==='7z'){
       showNotice('warn','🔷 7-Zip formatı tespit edildi.\n\nDosya listesi gösteriliyor. "📁 Klasör Yapısıyla Kaydet" ile yapıyı koruyarak ZIP olarak kaydedebilirsiniz.\n\n★ GitHub Pages\'e yüklerseniz gerçek dosya içerikleri de çıkarılabilir.');
@@ -792,6 +909,18 @@ function showNotice(type,msg){
   fmtNotice.className='fmt-notice '+type+' show';
   fmtNotice.style.whiteSpace='pre-line';
   fmtNotice.textContent=msg;
+  // RAR kılavuzunu gizle (ZIP/GZ için)
+  document.getElementById('rarGuide').classList.remove('show');
+}
+
+function showRarGuide(file, fmt){
+  // Format bilgi notunu gizle, kılavuzu göster
+  fmtNotice.className='fmt-notice';
+  const guide = document.getElementById('rarGuide');
+  guide.classList.add('show');
+  document.getElementById('rarGuideFormat').textContent =
+    fmt==='rar5' ? 'RAR5 formatı tespit edildi — '+file.name :
+    'RAR4 formatı tespit edildi — '+file.name;
 }
 
 /* ══ ZIP HANDLER ══ */
@@ -1274,7 +1403,7 @@ async function startCompress(){
 
     if(usePw){
       // Şifre bilgi dosyası ekle (orijinal zip şifrelemesi iOS'ta çalışmaz)
-      const hint='[S-Zip Pro Şifre Koruması]\n\nBu arşiv için şifre: '+pw+'\n\nNot: Standart ZIP şifrelemesi bazı uygulamalarda (iOS Dosyalar) atlanabilir.\nDaha güçlü şifreleme için 7-Zip ile AES-256 kullanın.\n\n© sebasmobil — S-Zip Pro 1.0.02';
+      const hint='[S-Zip Pro Şifre Koruması]\n\nBu arşiv için şifre: '+pw+'\n\nNot: Standart ZIP şifrelemesi bazı uygulamalarda (iOS Dosyalar) atlanabilir.\nDaha güçlü şifreleme için 7-Zip ile AES-256 kullanın.\n\n© sebasmobil — S-Zip Pro 1.0.03';
       zip.file('_SIFRE_BILGISI.txt', hint);
     }
 
